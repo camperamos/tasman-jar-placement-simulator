@@ -1,0 +1,25 @@
+tool_type,manufacturer,product,assembly,display_name,length_ft,od_in,id_in,connection,stroke_in,drill_collar_weight_range_lbs,pump_open_area_sq_in,jar_low_test_pull_lbs,jar_standard_pull_test_lbs,field_max_pull_load_lbs,tensile_yield_lbs,torque_yield_ft_lbs,source
+Jar,Logan / Innovex,Superior Hydraulic Fishing Jar,611-306,611-306 - 3-1/16 in Jar,10.0000,3.0625,1.5000,2-3/8 EUE,10,300-4000,3,"7000/12000",18000,36000,185000,4200,Fishing Tools Product Catalog 2022 p143
+Jar,Logan / Innovex,Superior Hydraulic Fishing Jar,611-312,611-312 - 3-1/8 in Jar,10.0000,3.1250,1.0000,2-3/8 REG,10,300-4000,3,"9000/12000",30000,55000,253000,7500,Fishing Tools Product Catalog 2022 p143
+Jar,Logan / Innovex,Superior Hydraulic Fishing Jar,611-313,611-313 - 3-1/8 in Jar,10.0000,3.1250,1.5000,2-7/8 PAC,10,300-4000,3,"7000/12000",18000,36000,185000,4200,Fishing Tools Product Catalog 2022 p143
+Jar,Logan / Innovex,Superior Hydraulic Fishing Jar,611-375,611-375 - 3-3/4 in Jar,12.6667,3.7500,1.5000,2-3/8 API IF,10,400-6000,4,"12000/16000",35000,72000,330000,14500,Fishing Tools Product Catalog 2022 p143
+Jar,Logan / Innovex,Superior Hydraulic Fishing Jar,611-377,611-377 - 3-3/4 in Jar,12.6667,3.7500,1.2500,2-7/8 API REG,10,400-6000,4,"12000/16000",35000,72000,330000,14500,Fishing Tools Product Catalog 2022 p143
+Jar,Logan / Innovex,Superior Hydraulic Fishing Jar,611-376,611-376 - 3-3/4 in Jar,12.6667,3.7500,1.8750,2-3/8 EUE,10,400-6000,4,"12000/16000",35000,51000,285000,9650,Fishing Tools Product Catalog 2022 p143
+Jar,Logan / Innovex,Superior Hydraulic Fishing Jar,611-425,611-425 - 4-1/4 in Jar,13.5000,4.2500,2.0000,2-7/8 IF,12,400-6000,6,"12000/16000",35000,75000,375000,18500,Fishing Tools Product Catalog 2022 p144
+Jar,Logan / Innovex,Superior Hydraulic Fishing Jar,611-450,611-450 - 4-1/2 in Jar,13.5000,4.5000,2.3750,2-7/8 EUE,12,400-6000,7.5,"12000/16000",30000,60000,360000,12000,Fishing Tools Product Catalog 2022 p144
+Jar,Logan / Innovex,Superior Hydraulic Fishing Jar,611-475,611-475 - 4-3/4 in Jar,13.5000,4.7500,2.2500,3-1/2 IF,12,500-8000,7,"15000/20000",50000,100000,505000,18100,Fishing Tools Product Catalog 2022 p144
+Jar,Logan / Innovex,Superior Hydraulic Fishing Jar,611-625,611-625 - 6-1/4 in Jar,13.5000,6.2500,2.2500,4-1/2 IF,12,8500-15000,11,"18000/26000",100000,200000,1000000,40800,Fishing Tools Product Catalog 2022 p144
+Jar,Logan / Innovex,Superior Hydraulic Fishing Jar,611-775,611-775 - 7-3/4 in Jar,15.0000,7.7500,3.0000,6-5/8 REG,12,12200-21000,16,"18000/26000",100000,275000,1600000,79000,Fishing Tools Product Catalog 2022 p144
+Accelerator,Logan / Innovex,Superior Energizer,614-306,614-306 - 3-1/16 in Energizer,12.3333,3.0625,1.5000,2-3/8 EUE,6,300-4000,3,,30500,,185000,4200,Superior Energizer Manual D425 p6/p11
+Accelerator,Logan / Innovex,Superior Energizer,614-312,614-312 - 3-1/8 in Energizer,8.5000,3.1250,1.0000,2-3/8 API REG,6,300-4000,3,,43692,,253000,7500,Superior Energizer Manual D425 p6/p11
+Accelerator,Logan / Innovex,Superior Energizer,614-313,614-313 - 3-1/8 in Energizer,12.3333,3.1250,1.5000,2-7/8 PAC,6,300-4000,3,,28450,,185000,4200,Superior Energizer Manual D425 p6/p11
+Accelerator,Logan / Innovex,Superior Energizer,614-375,614-375 - 3-3/4 in Energizer,11.8750,3.7500,1.5000,2-3/8 API IF,10,400-6000,4,,56900,,330000,14500,Superior Energizer Manual D425 p6/p11
+Accelerator,Logan / Innovex,Superior Energizer,614-377,614-377 - 3-3/4 in Energizer,,3.7500,1.2500,2-7/8 API REG,,400-6000,4,,56900,,330000,14500,Superior Energizer Manual D425 p6/p11
+Accelerator,Logan / Innovex,Superior Energizer,614-376,614-376 - 3-3/4 in Energizer,,3.7500,1.8750,2-3/8 EUE,,400-6000,4,,56900,,285000,9650,Superior Energizer Manual D425 p6/p11
+Accelerator,Logan / Innovex,Superior Energizer,614-425,614-425 - 4-1/4 in Energizer,11.3333,4.2500,2.0000,2-7/8 IF,6.1875,400-6000,6,,40600,,375000,18500,Superior Energizer Manual D425 p6/p12
+Accelerator,Logan / Innovex,Superior Energizer,614-450,614-450 - 4-1/2 in Energizer,,4.5000,2.3750,2-7/8 EUE,,400-6000,7.5,,,,360000,12000,Superior Energizer Manual D425 p12
+Accelerator,Logan / Innovex,Superior Energizer,614-475,614-475 - 4-3/4 in Energizer,11.5000,4.7500,2.2500,3-1/2 IF,7,500-8000,7,,81300,,505000,18100,Superior Energizer Manual D425 p6/p12
+Accelerator,Logan / Innovex,Superior Energizer,614-625,614-625 - 6-1/4 in Energizer,13.6667,6.2500,2.2500,4-1/2 IF,8.1875,8500-15000,11,,121900,,1000000,40800,Superior Energizer Manual D425 p6/p12
+Accelerator,Logan / Innovex,Superior Energizer,614-650,614-650 - 6-1/2 in Energizer,13.6667,6.5000,2.2500,4-1/2 IF,8.1875,8500-15000,11,,121900,,1000000,40800,Superior Energizer Manual D425 p6/p12
+Accelerator,Logan / Innovex,Superior Energizer,614-775,614-775 - 7-3/4 in Energizer,15.5833,7.7500,3.0625,6-5/8 REG,8.5,12200-21000,16,,121900,,1600000,79000,Superior Energizer Manual D425 p6/p12
+Accelerator,Logan / Innovex,Superior Energizer,614-800,614-800 - 8 in Energizer,,8.0000,3.0625,6-5/8 REG,8.5,12200-21000,16,,121900,,1600000,79000,Superior Energizer Manual D425 p6

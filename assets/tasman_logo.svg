@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 489" role="img" aria-label="Tasman logo">
+  <rect width="1500" height="489" fill="#ffffff"/>
+
+  <g transform="translate(26 80)">
+    <circle cx="190" cy="190" r="180" fill="#0079A8"/>
+    <circle cx="190" cy="190" r="158" fill="#ffffff"/>
+    <circle cx="190" cy="190" r="142" fill="#0079A8"/>
+    <path d="M68 88 Q190 -10 312 88 Z" fill="#ffffff"/>
+    <path d="M80 88 Q190 14 300 88 Z" fill="#0079A8"/>
+    <path d="M44 105 H336 Q356 137 361 166 H220 V347 Q190 354 160 347 V166 H39 Q44 137 44 105 Z" fill="#F47B20"/>
+    <path d="M38 181 H145 V345 Q96 329 66 285 Q37 242 38 181 Z" fill="#0079A8"/>
+    <path d="M235 181 H342 Q343 243 314 286 Q286 327 235 345 Z" fill="#0079A8"/>
+  </g>
+
+  <g transform="translate(486 79)">
+    <text x="0" y="184" font-family="Arial Black, Arial, sans-serif" font-size="182" font-weight="900" fill="#0079A8">Tasman</text>
+    <rect x="0" y="225" width="986" height="12" fill="#F47B20"/>
+    <text x="0" y="310" font-family="Arial, sans-serif" font-size="51" font-weight="800" letter-spacing="7" fill="#F47B20">RENTALS • SERVICES • SOLUTIONS</text>
+    <text x="0" y="388" font-family="Arial, sans-serif" font-size="70" font-weight="800" fill="#0079A8">www.tasmanoiltools.com</text>
+  </g>
+</svg>

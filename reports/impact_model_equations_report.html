@@ -1,0 +1,234 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Jar Impact Model - Equation Summary</title>
+  <style>
+    @page { size: A4; margin: 18mm; }
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      color: #1f2933;
+      line-height: 1.42;
+      font-size: 12.5px;
+    }
+    h1 { font-size: 25px; margin: 0 0 4px; }
+    h2 {
+      font-size: 17px;
+      margin: 22px 0 8px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid #cfd7df;
+    }
+    h3 { font-size: 14px; margin: 14px 0 6px; }
+    p { margin: 6px 0; }
+    .meta { color: #5b6773; margin-bottom: 18px; }
+    .note {
+      background: #f3f6f8;
+      border-left: 4px solid #008fe3;
+      padding: 10px 12px;
+      margin: 12px 0;
+    }
+    .warn {
+      background: #fff7ed;
+      border-left: 4px solid #f28c00;
+      padding: 10px 12px;
+      margin: 12px 0;
+    }
+    .eq {
+      font-family: "Consolas", "Courier New", monospace;
+      background: #f7f9fb;
+      border: 1px solid #d8dde3;
+      padding: 8px 10px;
+      margin: 6px 0 10px;
+      white-space: pre-wrap;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 8px 0 14px;
+      font-size: 11.5px;
+    }
+    th, td {
+      border: 1px solid #d8dde3;
+      padding: 6px 8px;
+      vertical-align: top;
+    }
+    th { background: #eef2f6; text-align: left; }
+    .small { font-size: 11px; color: #5b6773; }
+  </style>
+</head>
+<body>
+  <h1>Jar Impact Model - Equation Summary</h1>
+  <div class="meta">Tasman Jar Placement Simulator | Transparent physical model summary</div>
+
+  <div class="note">
+    This document describes the current open model used by the simulator. It is not the proprietary NOV / Bowen impact engine. The purpose is to make every assumption visible so the model can be calibrated against real reports and field experience.
+  </div>
+
+  <h2>1. What the Model Tries to Estimate</h2>
+  <p>The model estimates upward jarring impact using an energy balance. Pulling on the work string stores elastic energy. If an accelerator is installed, it adds additional stored energy. Only part of that energy reaches the jar/fish because survey geometry, side contact, clearance, mud damping, mass coupling, and spacing losses reduce the delivered energy.</p>
+
+  <div class="eq">Delivered Energy = Stored Energy x loss/efficiency factors</div>
+  <div class="eq">Impact Force ~= Pull Load + Delivered Energy / Effective Stop Distance</div>
+
+  <h2>2. Steel Cross-Sectional Area</h2>
+  <div class="eq">A = (pi / 4) x (OD^2 - ID^2)</div>
+  <table>
+    <tr><th>Term</th><th>Meaning</th></tr>
+    <tr><td>A</td><td>Metal cross-sectional area of the work string, in^2.</td></tr>
+    <tr><td>OD, ID</td><td>Work string outside and inside diameters, inches.</td></tr>
+  </table>
+  <p><b>Purpose:</b> area controls axial stiffness. Smaller area means more stretch under the same pull load. In the code, a minimum effective area is applied to avoid unrealistically high impact from very small strings.</p>
+
+  <h2>3. Axial Stretch of the Work String</h2>
+  <div class="eq">delta_string = F x L x 12 / (A x E)</div>
+  <table>
+    <tr><th>Term</th><th>Meaning</th></tr>
+    <tr><td>delta_string</td><td>Elastic stretch in the work string, inches.</td></tr>
+    <tr><td>F</td><td>Applied pull load, lbf.</td></tr>
+    <tr><td>L</td><td>Work string length from surface to top of BHA, ft.</td></tr>
+    <tr><td>A</td><td>Metal area, in^2.</td></tr>
+    <tr><td>E</td><td>Steel modulus, assumed 30,000,000 psi.</td></tr>
+  </table>
+  <p><b>Purpose:</b> estimates how much elastic displacement is available to release energy when the jar fires.</p>
+
+  <h2>4. Elastic Energy Stored in the Work String</h2>
+  <div class="eq">E_string = 0.5 x F x delta_string / 12</div>
+  <table>
+    <tr><th>Term</th><th>Meaning</th></tr>
+    <tr><td>E_string</td><td>Elastic energy stored in the work string, ft-lbf.</td></tr>
+    <tr><td>F</td><td>Applied pull load, lbf.</td></tr>
+    <tr><td>delta_string / 12</td><td>Stretch converted from inches to feet.</td></tr>
+  </table>
+  <p><b>Purpose:</b> converts string stretch into stored energy. This is the main energy source when no accelerator is installed.</p>
+
+  <h2>5. Energy Stored in the Accelerator / Energizer</h2>
+  <div class="eq">E_acc = 0.5 x F x stroke_acc / 12</div>
+  <table>
+    <tr><th>Term</th><th>Meaning</th></tr>
+    <tr><td>E_acc</td><td>Approximate accelerator stored energy, ft-lbf.</td></tr>
+    <tr><td>stroke_acc</td><td>Accelerator stroke from the datasheet, inches.</td></tr>
+  </table>
+  <p><b>Purpose:</b> approximates the accelerator as a spring-like energy storage device. This is a first-order approximation because we do not yet have the real force-vs-stroke curve.</p>
+
+  <h2>6. Total Stored Energy</h2>
+  <div class="eq">E_stored = E_string + E_acc</div>
+  <p><b>Purpose:</b> combines the string and accelerator energy before losses.</p>
+
+  <h2>7. Survey / Contact Efficiency</h2>
+  <div class="eq">contact_index =
+average(sin(inclination)) +
+0.7 x max(MD / TVD - 1, 0) +
+0.025 x average(DLS) +
+0.010 x max(DLS)</div>
+  <div class="eq">eta_survey = exp(-mu x contact_index)</div>
+  <table>
+    <tr><th>Term</th><th>Meaning</th></tr>
+    <tr><td>eta_survey</td><td>Efficiency factor for survey/contact losses.</td></tr>
+    <tr><td>mu</td><td>Friction coefficient entered by the user.</td></tr>
+    <tr><td>Inclination</td><td>Survey inclination at each station.</td></tr>
+    <tr><td>MD/TVD</td><td>Tortuosity proxy. Higher MD for same TVD implies more directional path.</td></tr>
+    <tr><td>DLS</td><td>Dogleg severity from the survey.</td></tr>
+  </table>
+  <p><b>Purpose:</b> penalizes energy transfer in deviated/tortuous wells. A more deviated well generally creates more side contact and loses more energy before the jar/fish.</p>
+
+  <h2>8. Clearance Efficiency from Hole / Casing ID</h2>
+  <div class="eq">radial_clearance = (Hole_ID - max_string_OD) / 2</div>
+  <div class="eq">clearance_ratio = radial_clearance / Hole_ID</div>
+  <div class="eq">eta_clearance = 0.35 + 0.65 x min(clearance_ratio / 0.12, 1)</div>
+  <table>
+    <tr><th>Term</th><th>Meaning</th></tr>
+    <tr><td>Hole_ID</td><td>Hole or casing inside diameter, inches.</td></tr>
+    <tr><td>max_string_OD</td><td>Largest OD in work string/BHA/fish path considered by the model.</td></tr>
+    <tr><td>eta_clearance</td><td>Efficiency factor for tight hole/casing clearance.</td></tr>
+  </table>
+  <p><b>Purpose:</b> tight clearance increases contact and damping. In your example report, Hole/Casing ID is 6 in and several components are near 5 in OD, so the clearance factor can materially reduce delivered energy.</p>
+
+  <h2>9. Mud / Fluid Efficiency</h2>
+  <div class="eq">eta_fluid = clamp(1 - 0.01 x (MW - 8.4), 0.85, 1.05)</div>
+  <table>
+    <tr><th>Term</th><th>Meaning</th></tr>
+    <tr><td>MW</td><td>Mud weight, lb/gal.</td></tr>
+    <tr><td>eta_fluid</td><td>Fluid damping efficiency.</td></tr>
+  </table>
+  <p><b>Purpose:</b> approximates damping from heavier fluid. This effect is currently mild and bounded.</p>
+
+  <h2>10. Mass Coupling from Joints Above Jar</h2>
+  <div class="eq">W_moving = N_joints x L_joint x w_joint + W_acc</div>
+  <div class="eq">W_ref = 6 x L_joint x w_joint</div>
+  <div class="eq">eta_mass = 0.55 + 0.35 x (1 - exp(-W_moving / W_ref))</div>
+  <table>
+    <tr><th>Term</th><th>Meaning</th></tr>
+    <tr><td>W_moving</td><td>Moving weight between/above jar, approximated from drill collar joints and accelerator weight.</td></tr>
+    <tr><td>N_joints</td><td>Number of drill collar joints above the jar.</td></tr>
+    <tr><td>L_joint</td><td>Assumed joint length, 30 ft.</td></tr>
+    <tr><td>w_joint</td><td>Average drill collar weight, lb/ft, from DC rows above the jar.</td></tr>
+    <tr><td>eta_mass</td><td>Mass coupling efficiency.</td></tr>
+  </table>
+  <p><b>Purpose:</b> adding drill collar mass helps transfer accelerator/string energy into the jar impact, but the benefit should saturate. This prevents one extra joint from unrealistically adding huge impact.</p>
+
+  <h2>11. Fish Resistance Factor</h2>
+  <div class="eq">W_resisted = W_fish + 0.15 x L_fish x w_joint</div>
+  <div class="eq">eta_fish = clamp(W_resisted / (W_resisted + W_moving), 0.25, 0.85)</div>
+  <table>
+    <tr><th>Term</th><th>Meaning</th></tr>
+    <tr><td>W_fish</td><td>Total fish weight from the fish component table.</td></tr>
+    <tr><td>L_fish</td><td>Total fish length.</td></tr>
+    <tr><td>eta_fish</td><td>Factor representing resistance/inertia at the stuck fish.</td></tr>
+  </table>
+  <p><b>Purpose:</b> the fish dimensions and weight matter. A heavier/longer fish changes how much of the jarring energy appears as peak impact at the stuck point.</p>
+
+  <h2>12. Spacing Efficiency</h2>
+  <div class="eq">spacing_length = N_joints x L_joint</div>
+  <div class="eq">eta_spacing = exp(-spacing_length / 1800)</div>
+  <p><b>Purpose:</b> accounts for energy loss as the distance between jar and accelerator/mass increases. The current decay length is a calibration constant.</p>
+
+  <h2>13. Delivered Energy</h2>
+  <div class="eq">E_delivered =
+E_stored x eta_survey x eta_clearance x eta_fluid x eta_mass x eta_fish x eta_spacing</div>
+  <p><b>Purpose:</b> combines all losses into the energy actually available at the impact event.</p>
+
+  <h2>14. Peak Impact Force</h2>
+  <div class="eq">Impact = F + E_delivered / d_stop</div>
+  <table>
+    <tr><th>Term</th><th>Meaning</th></tr>
+    <tr><td>Impact</td><td>Estimated peak upward impact force, lbf.</td></tr>
+    <tr><td>F</td><td>Applied firing/pull load, lbf.</td></tr>
+    <tr><td>d_stop</td><td>Effective stopping distance, ft. Internally derived from jar stroke with a minimum of 1 in.</td></tr>
+  </table>
+  <p><b>Purpose:</b> converts delivered energy into an equivalent peak force over a short stopping distance. This is one of the most sensitive assumptions in the model.</p>
+
+  <h2>15. Impact Ratio</h2>
+  <div class="eq">Impact Ratio = Impact / F</div>
+  <p><b>Purpose:</b> normalizes impact against the applied pull load. A ratio near 3 means the predicted peak force is roughly three times the applied pull load.</p>
+
+  <h2>16. Impulse</h2>
+  <div class="eq">m = W_moving / g</div>
+  <div class="eq">Impulse = sqrt(2 x m x E_delivered)</div>
+  <table>
+    <tr><th>Term</th><th>Meaning</th></tr>
+    <tr><td>Impulse</td><td>Momentum transfer estimate, lb-sec.</td></tr>
+    <tr><td>m</td><td>Moving mass, slugs.</td></tr>
+    <tr><td>g</td><td>32.174 ft/s^2.</td></tr>
+  </table>
+  <p><b>Purpose:</b> estimates momentum transfer. More moving mass can increase impulse even when peak impact does not increase.</p>
+
+  <h2>17. Why Your Example Can Produce a Low Ratio</h2>
+  <div class="warn">
+    In the example report reviewed, the model sees a tight 6 in Hole/Casing ID with approximately 5 in fish/BHA OD, friction coefficient 0.40, and a deviated survey. Those three items reduce eta_clearance and eta_survey. If the selected work string is small, the model limits area sensitivity to avoid non-physical impact spikes. Together, these assumptions can reduce delivered energy enough to produce an impact ratio near 3.
+  </div>
+
+  <h2>18. Calibration Items</h2>
+  <p>The following constants should be calibrated against trusted NOV/Bowen/field reports:</p>
+  <table>
+    <tr><th>Constant / Assumption</th><th>Current Use</th><th>Why It Matters</th></tr>
+    <tr><td>Minimum effective work string area</td><td>Prevents runaway stretch for very small strings.</td><td>Controls sensitivity to OD/ID.</td></tr>
+    <tr><td>Survey contact index coefficients</td><td>Inclination, tortuosity and DLS weighting.</td><td>Controls losses in deviated wells.</td></tr>
+    <tr><td>Clearance efficiency curve</td><td>Uses radial clearance relative to hole ID.</td><td>Controls losses in tight casing/hole.</td></tr>
+    <tr><td>Mass coupling curve</td><td>Saturating benefit from DC joints above jar.</td><td>Controls impact change when adding collars.</td></tr>
+    <tr><td>Spacing decay length</td><td>Penalizes long spacing from jar to mass/accelerator.</td><td>Controls effect of separation.</td></tr>
+    <tr><td>Effective stop distance</td><td>Derived from jar stroke with a minimum.</td><td>Strongly controls peak impact.</td></tr>
+  </table>
+
+  <p class="small">Generated as a model documentation aid for Tasman Jar Placement Simulator.</p>
+</body>
+</html>
