@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+.env
+.streamlit/secrets.toml
+.chrome-print-profile/
+reports/
+reference_report_media/
+extracted_report_images/
