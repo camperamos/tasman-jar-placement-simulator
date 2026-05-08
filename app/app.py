@@ -1094,11 +1094,11 @@ st.caption("Enter fish components from top downward.")
 
 default_fish = pd.DataFrame(
     {
-        "Component": [],
-        f"Length ({unit})": [],
-        "OD (in)": [],
-        "ID (in)": [],
-        "Type": [],
+        "Component": pd.Series(dtype="object"),
+        f"Length ({unit})": pd.Series(dtype="float64"),
+        "OD (in)": pd.Series(dtype="float64"),
+        "ID (in)": pd.Series(dtype="float64"),
+        "Type": pd.Series(dtype="object"),
     }
 )
 
@@ -1107,7 +1107,7 @@ fish_df = st.data_editor(
     num_rows="dynamic",
     use_container_width=True,
     height=185,
-    key=f"fish_editor_{unit}_blank_v1",
+    key=f"fish_editor_{unit}_blank_v2",
 )
 
 fish_length_input = None
@@ -1233,13 +1233,13 @@ else:
 
 default_bha = pd.DataFrame(
     {
-        "Component": [],
-        "Description": [],
-        "Joints": [],
-        f"Length ({unit})": [],
-        "OD (in)": [],
-        "ID (in)": [],
-        "Type": [],
+        "Component": pd.Series(dtype="object"),
+        "Description": pd.Series(dtype="object"),
+        "Joints": pd.Series(dtype="float64"),
+        f"Length ({unit})": pd.Series(dtype="float64"),
+        "OD (in)": pd.Series(dtype="float64"),
+        "ID (in)": pd.Series(dtype="float64"),
+        "Type": pd.Series(dtype="object"),
     }
 )
 
@@ -1266,8 +1266,8 @@ bha_component_options = [
     "Other",
 ]
 
-bha_state_key = f"bha_data_{unit}_blank_v1"
-bha_version_key = f"bha_editor_version_{unit}_blank_v1"
+bha_state_key = f"bha_data_{unit}_blank_v2"
+bha_version_key = f"bha_editor_version_{unit}_blank_v2"
 
 if bha_state_key not in st.session_state:
     st.session_state[bha_state_key] = default_bha
