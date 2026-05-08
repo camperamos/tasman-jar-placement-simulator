@@ -1042,16 +1042,7 @@ well_profile = st.radio(
     horizontal=True,
 )
 
-example = """MD\tInclination\tAzimuth
-0\t0\t0
-500\t2\t45
-1000\t8\t60
-1500\t18\t75
-2000\t35\t90
-2500\t55\t100
-3000\t70\t110
-3500\t82\t115
-"""
+example = ""
 
 survey_text = ""
 well_depth_input = None
@@ -1059,7 +1050,7 @@ well_depth_input = None
 if well_profile == "Vertical":
     well_depth_input = st.number_input(
         f"Well Depth ({unit})",
-        value=3500.0,
+        value=None,
         min_value=0.0,
     )
     survey_bottom_input = well_depth_input
@@ -1067,7 +1058,7 @@ else:
     st.caption(f"Paste MD, Inclination and Azimuth from Excel. MD must be in {unit}.")
     survey_text = st.text_area(
         "Paste survey here",
-        value=example,
+        value="",
         height=150,
     )
 
@@ -1103,19 +1094,11 @@ st.caption("Enter fish components from top downward.")
 
 default_fish = pd.DataFrame(
     {
-        "Component": [
-            "Top Connection",
-            "Tubular Section",
-            "Bottom Assembly",
-        ],
-        f"Length ({unit})": [5.0, 90.0, 5.0],
-        "OD (in)": [4.75, 4.75, 4.75],
-        "ID (in)": [2.25, 2.25, 2.25],
-        "Type": [
-            "Connection",
-            "Tubular",
-            "Assembly",
-        ],
+        "Component": [],
+        f"Length ({unit})": [],
+        "OD (in)": [],
+        "ID (in)": [],
+        "Type": [],
     }
 )
 
@@ -1124,7 +1107,7 @@ fish_df = st.data_editor(
     num_rows="dynamic",
     use_container_width=True,
     height=185,
-    key=f"fish_editor_{unit}",
+    key=f"fish_editor_{unit}_blank_v1",
 )
 
 fish_length_input = None
@@ -1178,7 +1161,7 @@ if (
             f"Fish Top + Fish Length cannot be greater than the maximum MD in the survey."
         )
 
-if fish_length_input is not None:
+if fish_length_input is not None and fish_length_input > 0:
     fm1, fm2 = st.columns(2)
     fm1.metric(f"Calculated Fish Length ({unit})", f"{fish_length_input:,.0f}")
 
@@ -1209,12 +1192,12 @@ else:
     selected_jar_name = c1.selectbox(
         "Jar / Martillo",
         jar_options,
-        index=1 if len(jar_options) > 1 else 0,
+        index=0,
     )
     selected_accelerator_name = c2.selectbox(
         "Accelerator / Energizer",
         accelerator_options,
-        index=2 if len(accelerator_options) > 2 else 0,
+        index=1 if len(accelerator_options) > 1 else 0,
     )
 
     if selected_jar_name != "Manual / Custom":
@@ -1250,69 +1233,13 @@ else:
 
 default_bha = pd.DataFrame(
     {
-        "Component": [
-            "Overshot / Spear",
-            "Safety Joint",
-            "Drill Collar",
-            "Jar",
-            "Drill Collar",
-            "Accelerator",
-            "HWDP",
-        ],
-        "Description": [
-            "Overshot / Spear",
-            "Safety Joint",
-            "Drill Collar",
-            "Fishing Jar",
-            "Drill Collar",
-            "Accelerator / Energizer",
-            "Heavy Weight Drill Pipe",
-        ],
-        "Joints": [
-            None,
-            None,
-            3,
-            None,
-            3,
-            None,
-            10,
-        ],
-        f"Length ({unit})": [
-            5.0,
-            3.0,
-            90.0,
-            tool_length_for_unit(jar_tool, unit) or 30.0,
-            90.0,
-            tool_length_for_unit(accelerator_tool, unit) or 30.0,
-            300.0,
-        ],
-        "OD (in)": [
-            4.75,
-            4.75,
-            6.50,
-            tool_dimension(jar_tool, "od_in", 6.50),
-            6.50,
-            tool_dimension(accelerator_tool, "od_in", 6.50),
-            5.00,
-        ],
-        "ID (in)": [
-            2.25,
-            2.25,
-            2.25,
-            tool_dimension(jar_tool, "id_in", 2.25),
-            2.25,
-            tool_dimension(accelerator_tool, "id_in", 2.25),
-            3.00,
-        ],
-        "Type": [
-            "Fishing Tool",
-            "Accessory",
-            "DC",
-            "Jar",
-            "DC",
-            "Accelerator",
-            "HWDP",
-        ],
+        "Component": [],
+        "Description": [],
+        "Joints": [],
+        f"Length ({unit})": [],
+        "OD (in)": [],
+        "ID (in)": [],
+        "Type": [],
     }
 )
 
@@ -1339,8 +1266,8 @@ bha_component_options = [
     "Other",
 ]
 
-bha_state_key = f"bha_data_{unit}"
-bha_version_key = f"bha_editor_version_{unit}"
+bha_state_key = f"bha_data_{unit}_blank_v1"
+bha_version_key = f"bha_editor_version_{unit}_blank_v1"
 
 if bha_state_key not in st.session_state:
     st.session_state[bha_state_key] = default_bha
@@ -1413,38 +1340,47 @@ st.caption("Tubing or drill pipe from the top of the BHA to surface.")
 ws1, ws2, ws3 = st.columns(3)
 work_string_type = ws1.selectbox(
     "Work String Type",
-    ["Drill Pipe", "Tubing"],
+    ["Select...", "Drill Pipe", "Tubing"],
 )
 
-work_catalog = work_string_catalog(work_string_type)
-work_string_od_label = ws2.selectbox(
-    "OD",
-    work_catalog["OD_label"].drop_duplicates().tolist(),
-)
-available_weights = work_catalog[work_catalog["OD_label"] == work_string_od_label][
-    "WT"
-].dropna().tolist()
-work_string_weight_lbft = ws3.selectbox(
-    "Nominal Weight (lb/ft)",
-    available_weights,
-    format_func=lambda x: f"{x:g}",
-)
+work_string_od = None
+work_string_id = None
+work_string_weight_lbft = None
+work_string_description = ""
 
-selected_work_string = work_catalog[
-    (work_catalog["OD_label"] == work_string_od_label)
-    & (work_catalog["WT"] == work_string_weight_lbft)
-].iloc[0]
-work_string_od = float(selected_work_string["OD_numeric"])
-work_string_id = float(selected_work_string["ID"])
-work_string_description = (
-    f"{work_string_type} {work_string_od_label} OD, "
-    f"{work_string_weight_lbft:g} lb/ft"
-)
+if work_string_type != "Select...":
+    work_catalog = work_string_catalog(work_string_type)
+    work_string_od_label = ws2.selectbox(
+        "OD",
+        ["Select..."] + work_catalog["OD_label"].drop_duplicates().tolist(),
+    )
 
-ws_m1, ws_m2, ws_m3 = st.columns(3)
-ws_m1.metric("Selected Work String", work_string_description)
-ws_m2.metric("Work String ID", f'{work_string_id:g}"')
-ws_m3.metric("Nominal Weight", f"{work_string_weight_lbft:,.2f} lb/ft")
+    if work_string_od_label != "Select...":
+        available_weights = work_catalog[work_catalog["OD_label"] == work_string_od_label][
+            "WT"
+        ].dropna().tolist()
+        work_string_weight_lbft = ws3.selectbox(
+            "Nominal Weight (lb/ft)",
+            ["Select..."] + available_weights,
+            format_func=lambda x: x if isinstance(x, str) else f"{x:g}",
+        )
+
+        if work_string_weight_lbft != "Select...":
+            selected_work_string = work_catalog[
+                (work_catalog["OD_label"] == work_string_od_label)
+                & (work_catalog["WT"] == work_string_weight_lbft)
+            ].iloc[0]
+            work_string_od = float(selected_work_string["OD_numeric"])
+            work_string_id = float(selected_work_string["ID"])
+            work_string_description = (
+                f"{work_string_type} {work_string_od_label} OD, "
+                f"{work_string_weight_lbft:g} lb/ft"
+            )
+
+            ws_m1, ws_m2, ws_m3 = st.columns(3)
+            ws_m1.metric("Selected Work String", work_string_description)
+            ws_m2.metric("Work String ID", f'{work_string_id:g}"')
+            ws_m3.metric("Nominal Weight", f"{work_string_weight_lbft:,.2f} lb/ft")
 
 st.markdown("---")
 st.markdown("## Wellbore Data")
@@ -1453,36 +1389,42 @@ st.caption("Used with the survey to estimate contact/friction energy losses.")
 wb1, wb2, wb3 = st.columns(3)
 wellbore_type = wb1.selectbox(
     "Hole Type",
-    ["Cased Hole", "Open Hole"],
+    ["Select...", "Cased Hole", "Open Hole"],
 )
+
+hole_id_in = None
+wellbore_description = ""
 
 if wellbore_type == "Cased Hole":
     casing_data = casing_catalog()
     casing_od_label = wb2.selectbox(
         "Casing OD",
-        casing_data["OD_label"].drop_duplicates().tolist(),
+        ["Select..."] + casing_data["OD_label"].drop_duplicates().tolist(),
     )
-    casing_weights = casing_data[casing_data["OD_label"] == casing_od_label][
-        "WT"
-    ].dropna().tolist()
-    casing_weight = wb3.selectbox(
-        "Casing Weight (lb/ft)",
-        casing_weights,
-        format_func=lambda x: f"{x:g}",
-    )
-    selected_casing = casing_data[
-        (casing_data["OD_label"] == casing_od_label)
-        & (casing_data["WT"] == casing_weight)
-    ].iloc[0]
-    hole_id_in = float(selected_casing["ID"])
-    wellbore_description = (
-        f"Cased Hole - {casing_od_label} {casing_weight:g} lb/ft casing"
-    )
-    st.metric("Selected Casing ID", f'{hole_id_in:.2f}"')
-else:
+
+    if casing_od_label != "Select...":
+        casing_weights = casing_data[casing_data["OD_label"] == casing_od_label][
+            "WT"
+        ].dropna().tolist()
+        casing_weight = wb3.selectbox(
+            "Casing Weight (lb/ft)",
+            ["Select..."] + casing_weights,
+            format_func=lambda x: x if isinstance(x, str) else f"{x:g}",
+        )
+        if casing_weight != "Select...":
+            selected_casing = casing_data[
+                (casing_data["OD_label"] == casing_od_label)
+                & (casing_data["WT"] == casing_weight)
+            ].iloc[0]
+            hole_id_in = float(selected_casing["ID"])
+            wellbore_description = (
+                f"Cased Hole - {casing_od_label} {casing_weight:g} lb/ft casing"
+            )
+            st.metric("Selected Casing ID", f'{hole_id_in:.2f}"')
+elif wellbore_type == "Open Hole":
     hole_id_in = wb2.number_input(
         "Open Hole ID (in)",
-        value=8.5,
+        value=None,
         min_value=0.0,
     )
     wellbore_description = "Open Hole"
@@ -1492,42 +1434,46 @@ st.markdown("## Impact Simulation Inputs")
 st.caption("Physical inputs used to estimate up-jarring impact and generate the report.")
 
 is1, is2 = st.columns(2)
-mud_weight_ppg = is1.number_input("Mud Weight (lb/gal)", value=8.4, min_value=0.0)
-friction_min = 0.0 if wellbore_type == "Cased Hole" else 0.25
-friction_max = 0.25 if wellbore_type == "Cased Hole" else 0.40
-friction_default = 0.20 if wellbore_type == "Cased Hole" else 0.30
+mud_weight_ppg = is1.number_input("Mud Weight (lb/gal)", value=None, min_value=0.0)
+friction_coefficient = None
 
-if "friction_coefficient" not in st.session_state:
-    st.session_state["friction_coefficient"] = friction_default
-if st.session_state["friction_coefficient"] < friction_min:
-    st.session_state["friction_coefficient"] = friction_min
-if st.session_state["friction_coefficient"] > friction_max:
-    st.session_state["friction_coefficient"] = friction_max
+if wellbore_type == "Select...":
+    is2.info("Select Hole Type to enable friction range.")
+else:
+    friction_min = 0.0 if wellbore_type == "Cased Hole" else 0.25
+    friction_max = 0.25 if wellbore_type == "Cased Hole" else 0.40
+    friction_default = 0.20 if wellbore_type == "Cased Hole" else 0.30
 
-friction_coefficient = is2.number_input(
-    f"Friction Coefficient ({friction_min:.2f} - {friction_max:.2f})",
-    min_value=friction_min,
-    max_value=friction_max,
-    step=0.01,
-    key="friction_coefficient",
-)
+    if "friction_coefficient_blank_v1" not in st.session_state:
+        st.session_state["friction_coefficient_blank_v1"] = friction_default
+    if st.session_state["friction_coefficient_blank_v1"] < friction_min:
+        st.session_state["friction_coefficient_blank_v1"] = friction_min
+    if st.session_state["friction_coefficient_blank_v1"] > friction_max:
+        st.session_state["friction_coefficient_blank_v1"] = friction_max
+
+    friction_coefficient = is2.number_input(
+        f"Friction Coefficient ({friction_min:.2f} - {friction_max:.2f})",
+        min_value=friction_min,
+        max_value=friction_max,
+        step=0.01,
+        key="friction_coefficient_blank_v1",
+    )
 
 jar_pull_limit_lbf = jar_activation_limit_lbf(jar_tool)
-applied_overpull_default_lbf = 50000.0
+applied_overpull_default_lbf = None
 if jar_pull_limit_lbf is not None:
     st.caption(
         f"Selected jar pull limit for analysis: {jar_pull_limit_lbf:,.0f} lb. "
         "Applied overpull cannot exceed this value."
     )
-    applied_overpull_default_lbf = min(applied_overpull_default_lbf, jar_pull_limit_lbf)
+    applied_overpull_default_lbf = None
 
-if "applied_overpull_lbf" not in st.session_state:
-    st.session_state["applied_overpull_lbf"] = applied_overpull_default_lbf
 if (
     jar_pull_limit_lbf is not None
-    and st.session_state["applied_overpull_lbf"] > jar_pull_limit_lbf
+    and st.session_state.get("applied_overpull_lbf_blank_v1") is not None
+    and st.session_state["applied_overpull_lbf_blank_v1"] > jar_pull_limit_lbf
 ):
-    st.session_state["applied_overpull_lbf"] = jar_pull_limit_lbf
+    st.session_state["applied_overpull_lbf_blank_v1"] = jar_pull_limit_lbf
 
 applied_overpull_lbf = st.number_input(
     "Applied Overpull / Firing Load Up (lb)",
@@ -1535,7 +1481,7 @@ applied_overpull_lbf = st.number_input(
     min_value=0.0,
     max_value=jar_pull_limit_lbf,
     step=5000.0,
-    key="applied_overpull_lbf",
+    key="applied_overpull_lbf_blank_v1",
 )
 
 if st.button("Generate Well Path and BHA Placement"):
@@ -1543,6 +1489,26 @@ if st.button("Generate Well Path and BHA Placement"):
 
 if st.session_state.get("run_simulation"):
     try:
+        if work_string_od is None or work_string_id is None or work_string_weight_lbft is None:
+            st.error("Work String selection is required.")
+            st.stop()
+
+        if wellbore_type == "Select..." or hole_id_in is None:
+            st.error("Wellbore Data is required.")
+            st.stop()
+
+        if mud_weight_ppg is None:
+            st.error("Mud Weight is required.")
+            st.stop()
+
+        if friction_coefficient is None:
+            st.error("Friction Coefficient is required.")
+            st.stop()
+
+        if applied_overpull_lbf is None:
+            st.error("Applied Overpull / Firing Load Up is required.")
+            st.stop()
+
         if jar_pull_limit_lbf is not None and applied_overpull_lbf > jar_pull_limit_lbf:
             st.error(
                 f"Applied overpull cannot exceed the selected jar limit of "
