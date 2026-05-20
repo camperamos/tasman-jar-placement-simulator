@@ -38,9 +38,12 @@ _TUBING_CSV = """OD,WT,ID
 1.660,2.10,1.410
 1.660,2.30,1.380
 1.660,2.40,1.380
+1.660,3.02,1.278
 1.900,2.40,1.650
 1.900,2.75,1.610
 1.900,2.90,1.610
+1.900,3.64,1.500
+2.063,3.25,1.751
 2.375,4.00,2.041
 2.375,4.10,2.041
 2.375,4.60,1.995
@@ -50,15 +53,40 @@ _TUBING_CSV = """OD,WT,ID
 2.375,5.80,1.867
 2.375,5.95,1.867
 2.375,6.20,1.853
+2.375,7.70,1.703
 2.875,5.90,2.469
 2.875,6.40,2.441
 2.875,6.50,2.441
+2.875,7.90,2.323
+2.875,8.60,2.259
+2.875,8.70,2.259
+2.875,9.50,2.195
+2.875,10.70,2.091
+2.875,11.00,2.065
 3.500,7.70,3.068
 3.500,8.50,3.018
+3.500,9.20,2.992
+3.500,9.30,2.992
+3.500,10.20,2.797
+3.500,12.70,2.750
+3.500,12.80,2.764
+3.500,12.95,2.750
+3.500,14.90,2.602
+3.500,15.80,2.548
+3.500,16.70,2.480
 4.000,9.25,3.548
 4.000,9.50,3.548
+4.000,11.00,3.476
+4.000,11.60,3.428
+4.000,13.40,3.340
 4.500,11.00,4.026
 4.500,11.60,3.428
+4.500,11.80,3.990
+4.500,12.60,3.958
+4.500,12.75,3.958
+4.500,13.50,3.920
+4.500,15.50,3.826
+4.500,19.20,3.640
 """
 
 _DRILLPIPE_CSV = """OD,WT,ID
@@ -99,8 +127,85 @@ _DRILLPIPE_CSV = """OD,WT,ID
 8-5/8,40.00,7.825
 """
 
+_CT_CSV = """OD,WT,ID
+1.25,0.109,1.032
+1.25,0.116,1.018
+1.25,0.125,1.000
+1.25,0.134,0.982
+1.25,0.145,0.960
+1.25,0.156,0.938
+1.25,0.175,0.900
+1.25,0.190,0.870
+1.25,0.204,0.842
+1.50,0.109,1.282
+1.50,0.116,1.268
+1.50,0.125,1.250
+1.50,0.134,1.232
+1.50,0.145,1.210
+1.50,0.156,1.188
+1.50,0.175,1.150
+1.50,0.190,1.120
+1.50,0.204,1.092
+1.50,0.224,1.052
+1.75,0.109,1.532
+1.75,0.116,1.518
+1.75,0.125,1.500
+1.75,0.134,1.482
+1.75,0.145,1.460
+1.75,0.156,1.438
+1.75,0.175,1.400
+1.75,0.204,1.342
+1.75,0.224,1.302
+1.75,0.236,1.278
+1.75,0.250,1.250
+2.00,0.109,1.782
+2.00,0.116,1.768
+2.00,0.125,1.750
+2.00,0.134,1.732
+2.00,0.145,1.710
+2.00,0.156,1.688
+2.00,0.175,1.650
+2.00,0.190,1.620
+2.00,0.204,1.592
+2.00,0.224,1.552
+2.00,0.236,1.528
+2.00,0.250,1.500
+2.00,0.276,1.448
+2.375,0.125,2.125
+2.375,0.134,2.107
+2.375,0.145,2.085
+2.375,0.156,2.063
+2.375,0.175,2.025
+2.375,0.190,1.995
+2.375,0.204,1.967
+2.375,0.224,1.927
+2.375,0.236,1.903
+2.375,0.250,1.875
+2.375,0.276,1.823
+2.625,0.134,2.357
+2.625,0.145,2.335
+2.625,0.156,2.313
+2.625,0.175,2.275
+2.625,0.190,2.245
+2.625,0.204,2.217
+2.625,0.224,2.177
+2.625,0.236,2.153
+2.625,0.250,2.125
+2.625,0.276,2.073
+2.875,0.145,2.585
+2.875,0.156,2.563
+2.875,0.175,2.525
+2.875,0.190,2.495
+2.875,0.204,2.467
+2.875,0.224,2.427
+2.875,0.236,2.403
+2.875,0.250,2.375
+2.875,0.276,2.323
+"""
+
 TUBING_DF = pd.read_csv(StringIO(_TUBING_CSV))
 DRILLPIPE_DF = pd.read_csv(StringIO(_DRILLPIPE_CSV))
+CT_DF = pd.read_csv(StringIO(_CT_CSV))
 
 _CASING_CSV = """OD,WT,ID
 4,5.65,3.607
@@ -371,15 +476,29 @@ def parse_inch_value(value):
 
 
 def work_string_catalog(kind):
-    catalog = DRILLPIPE_DF.copy() if kind == "Drill Pipe" else TUBING_DF.copy()
+    if kind == "Drill Pipe":
+        catalog = DRILLPIPE_DF.copy()
+    elif kind == "Tubing":
+        catalog = TUBING_DF.copy()
+    else:
+        catalog = CT_DF.copy()
+
     catalog["OD_numeric"] = catalog["OD"].apply(parse_inch_value)
     catalog["OD_label"] = catalog["OD"].astype(str)
-    if kind == "Tubing":
+    if kind in ["Tubing", "Coiled Tubing"]:
         catalog["OD_label"] = catalog["OD_numeric"].apply(lambda x: f'{x:g}"')
     else:
         catalog["OD_label"] = catalog["OD_label"].apply(lambda x: f'{x}"')
     catalog["WT"] = pd.to_numeric(catalog["WT"], errors="coerce")
     catalog["ID"] = pd.to_numeric(catalog["ID"], errors="coerce")
+    if kind == "Coiled Tubing":
+        catalog["Weight_lbft"] = catalog.apply(
+            lambda row: steel_weight_lbft(row["OD_numeric"], row["ID"]),
+            axis=1,
+        )
+    else:
+        catalog["Weight_lbft"] = catalog["WT"]
+    catalog["WT_label"] = catalog["WT"].apply(lambda value: f"{value:g}")
     return catalog
 
 
@@ -392,11 +511,16 @@ def casing_catalog():
     return catalog
 
 
-def jar_activation_limit_lbf(tool):
+def jar_activation_limit_lbf(tool, direction="up"):
     if tool is None:
         return None
 
-    for key in ["field_max_pull_load_lbs", "jar_standard_pull_test_lbs"]:
+    if direction == "down":
+        keys = ["field_max_push_load_lbs", "jar_standard_push_test_lbs"]
+    else:
+        keys = ["field_max_pull_load_lbs", "jar_standard_pull_test_lbs"]
+
+    for key in keys:
         value = tool.get(key)
         if value is not None and not pd.isna(value) and float(value) > 0:
             return float(value)
@@ -408,13 +532,141 @@ def build_tool_label(row):
     od = decimal_to_fraction_text(row.get("od_in"))
     tool_id = decimal_to_fraction_text(row.get("id_in"))
     connection = row.get("connection")
-    product = "Jar" if row.get("tool_type") == "Jar" else "Energizer"
+    if row.get("tool_type") == "Accelerator":
+        product = "Energizer"
+    else:
+        product = row.get("product") or "Jar"
 
     size = f'{od}" OD'
     if tool_id:
         size = f'{od}" OD x {tool_id}" ID'
 
     return f"{size} | {connection} | {product}"
+
+
+def ct_jar_catalog_rows():
+    base = {
+        "tool_type": "Jar",
+        "application": "CT",
+        "manufacturer": "Logan / Innovex",
+        "product": "Bi-Directional Coiled Tubing Jar",
+        "drill_collar_weight_range_lbs": "",
+        "source": "Bi-Directional Coiled Tubing Jar Manual D410 p11/p14",
+    }
+    return [
+        {
+            **base,
+            "assembly": "616-169",
+            "display_name": "1-11/16 in Bi-Directional CT Jar",
+            "length_ft": 4.2760,
+            "od_in": 1.6875,
+            "id_in": 0.530,
+            "connection": '1" AMMT',
+            "stroke_in": np.nan,
+            "pump_open_area_sq_in": 1.28,
+            "jar_standard_pull_test_lbs": 12000,
+            "field_max_pull_load_lbs": 12000,
+            "jar_standard_push_test_lbs": 1500,
+            "field_max_push_load_lbs": 12000,
+            "max_lift_load_lbs": 69000,
+            "torque_yield_ft_lbs": 800,
+        },
+        {
+            **base,
+            "assembly": "616-213",
+            "display_name": "2-1/8 in Bi-Directional CT Jar",
+            "length_ft": 5.7656,
+            "od_in": 2.125,
+            "id_in": 0.656,
+            "connection": '1-1/2" AMMT',
+            "stroke_in": np.nan,
+            "pump_open_area_sq_in": 2.23,
+            "jar_standard_pull_test_lbs": 24000,
+            "field_max_pull_load_lbs": 18000,
+            "jar_standard_push_test_lbs": 2500,
+            "field_max_push_load_lbs": 18000,
+            "max_lift_load_lbs": 125000,
+            "torque_yield_ft_lbs": 1700,
+        },
+        {
+            **base,
+            "assembly": "616-288",
+            "display_name": "2-7/8 in Bi-Directional CT Jar",
+            "length_ft": 6.0573,
+            "od_in": 2.875,
+            "id_in": 0.906,
+            "connection": '2-3/8" PAC',
+            "stroke_in": np.nan,
+            "pump_open_area_sq_in": 3.98,
+            "jar_standard_pull_test_lbs": 35000,
+            "field_max_pull_load_lbs": 36000,
+            "jar_standard_push_test_lbs": 4000,
+            "field_max_push_load_lbs": 36000,
+            "max_lift_load_lbs": 225000,
+            "torque_yield_ft_lbs": 4000,
+        },
+    ]
+
+
+def ct_energizer_catalog_rows():
+    base = {
+        "tool_type": "Accelerator",
+        "application": "CT",
+        "manufacturer": "Logan / Innovex",
+        "product": "Bi-Directional Coiled Tubing Energizer",
+        "drill_collar_weight_range_lbs": "",
+        "source": "Bi-Directional Coiled Tubing Energizers Catalog",
+    }
+    return [
+        {
+            **base,
+            "assembly": "617-169",
+            "display_name": "1-11/16 in Bi-Directional CT Energizer",
+            "length_ft": 4.2760,
+            "od_in": 1.6875,
+            "id_in": 0.530,
+            "connection": '1" AMMT',
+            "stroke_in": 3.95,
+            "pump_open_area_sq_in": 1.128,
+            "field_max_pull_load_lbs": 12000,
+            "field_max_push_load_lbs": 12000,
+            "max_lift_load_lbs": 69000,
+            "tensile_yield_lbs": 69000,
+            "torque_yield_ft_lbs": 800,
+        },
+        {
+            **base,
+            "assembly": "617-213",
+            "display_name": "2-1/8 in Bi-Directional CT Energizer",
+            "length_ft": 5.7656,
+            "od_in": 2.125,
+            "id_in": 0.656,
+            "connection": '1-1/2" AMMT',
+            "stroke_in": 5.50,
+            "pump_open_area_sq_in": 2.23,
+            "field_max_pull_load_lbs": 18000,
+            "field_max_push_load_lbs": 18000,
+            "max_lift_load_lbs": 125000,
+            "tensile_yield_lbs": 125000,
+            "torque_yield_ft_lbs": 1700,
+        },
+        {
+            **base,
+            "assembly": "617-288",
+            "display_name": "2-7/8 in Bi-Directional CT Energizer",
+            "length_ft": 6.0573,
+            "od_in": 2.875,
+            "id_in": 0.906,
+            "connection": '2-3/8" PAC',
+            "stroke_in": 6.00,
+            "pump_open_area_sq_in": 3.98,
+            "field_max_pull_load_lbs": 36000,
+            "field_max_push_load_lbs": 36000,
+            "max_lift_load_lbs": 225000,
+            "tensile_yield_lbs": 225000,
+            "torque_yield_ft_lbs": 4000,
+        },
+    ]
 
 
 @st.cache_data
@@ -424,6 +676,16 @@ def load_tool_catalog():
         return pd.DataFrame()
 
     catalog = pd.read_csv(catalog_path)
+    catalog["application"] = "Fishing"
+    catalog = pd.concat(
+        [
+            catalog,
+            pd.DataFrame(ct_jar_catalog_rows()),
+            pd.DataFrame(ct_energizer_catalog_rows()),
+        ],
+        ignore_index=True,
+        sort=False,
+    )
 
     numeric_cols = [
         "length_ft",
@@ -433,6 +695,9 @@ def load_tool_catalog():
         "pump_open_area_sq_in",
         "jar_standard_pull_test_lbs",
         "field_max_pull_load_lbs",
+        "jar_standard_push_test_lbs",
+        "field_max_push_load_lbs",
+        "max_lift_load_lbs",
         "tensile_yield_lbs",
         "torque_yield_ft_lbs",
     ]
@@ -446,15 +711,17 @@ def load_tool_catalog():
     return catalog
 
 
-def tool_options(catalog, tool_type):
+def tool_options(catalog, tool_type, application=None):
     if catalog.empty:
         return []
 
     tools = catalog[catalog["tool_type"] == tool_type].copy()
+    if application is not None and "application" in tools.columns:
+        tools = tools[tools["application"] == application].copy()
     return tools["option_label"].dropna().tolist()
 
 
-def selected_tool(catalog, tool_type, option_label):
+def selected_tool(catalog, tool_type, option_label, application=None):
     if catalog.empty or not option_label:
         return None
 
@@ -462,6 +729,8 @@ def selected_tool(catalog, tool_type, option_label):
         (catalog["tool_type"] == tool_type)
         & (catalog["option_label"] == option_label)
     ]
+    if application is not None and "application" in matches.columns:
+        matches = matches[matches["application"] == application]
 
     if matches.empty:
         return None
@@ -488,45 +757,48 @@ def dataframes_match(left, right):
 
 
 def default_component_description(component):
-    descriptions = {
-        "Overshot / Spear": "Overshot / Spear",
-        "Safety Joint": "Safety Joint",
-        "Bumper Sub": "Bumper Sub",
-        "Drill Collar": "Drill Collar",
-        "HWDP": "Heavy Weight Drill Pipe",
-        "Drill Pipe": "Drill Pipe",
-        "Crossover": "Crossover",
-        "Jar": "Fishing Jar",
-        "Accelerator": "Accelerator / Energizer",
-    }
-    return descriptions.get(component, "")
+    return "" if component == "Other" else component
 
 
 def apply_bha_component_defaults(bha_df, unit, jar_tool, accelerator_tool):
     work = bha_df.copy()
     length_col = f"Length ({unit})"
 
+    if "Item" in work.columns:
+        work = work.drop(columns=["Item"])
     if length_col not in work.columns:
         work[length_col] = 0.0
     for col in ["Description", "Joints", "OD (in)", "ID (in)", "Type"]:
         if col not in work.columns:
             work[col] = None
+    for col in ["Component", "Description", "Type"]:
+        work[col] = work[col].astype("object")
 
-    component_values = work["Component"].astype(str)
+    component_values = work["Component"].fillna("").astype(str).str.strip()
+    work["Component"] = component_values.replace("", np.nan)
     work["Joints"] = pd.to_numeric(work["Joints"], errors="coerce")
-    non_other_rows = component_values != "Other"
+    non_other_rows = (component_values != "Other") & (component_values != "")
     work.loc[non_other_rows, "Description"] = component_values[non_other_rows].apply(
         default_component_description
     )
 
     component_type_map = {
+        "Mill/Bit": "Mill/Bit",
         "Overshot / Spear": "Fishing Tool",
+        "CT Connector": "CT Connector",
+        "Hydraulic Disconnect": "Hydraulic Disconnect",
+        "Dual Flapper": "Dual Flapper",
+        "Circulation Sub": "Circulation Sub",
+        "Stabilizer": "Stabilizer",
         "Safety Joint": "Accessory",
         "Bumper Sub": "Bumper Sub",
+        "Weight Bar": "Weight Bar",
         "Drill Collar": "DC",
         "HWDP": "HWDP",
         "Drill Pipe": "Drill Pipe",
         "Crossover": "Crossover",
+        "Jar": "Jar",
+        "Accelerator": "Accelerator",
         "Other": "Other",
     }
 
@@ -534,12 +806,13 @@ def apply_bha_component_defaults(bha_df, unit, jar_tool, accelerator_tool):
         rows = component_values == component
         work.loc[rows, "Type"] = component_type
 
-    joint_based_rows = component_values.isin(["Drill Collar", "HWDP"])
+    joint_based_rows = component_values.isin(["Drill Collar", "HWDP", "Weight Bar"])
     joint_length = 30.0 if unit == "ft" else FT_TO_M * 30.0
     work.loc[joint_based_rows & work["Joints"].isna(), "Joints"] = 1
     work.loc[joint_based_rows, length_col] = (
         work.loc[joint_based_rows, "Joints"].fillna(0.0) * joint_length
     )
+    work.loc[~joint_based_rows, "Joints"] = np.nan
 
     if jar_tool is not None:
         jar_rows = component_values.str.lower() == "jar"
@@ -549,7 +822,7 @@ def apply_bha_component_defaults(bha_df, unit, jar_tool, accelerator_tool):
         work.loc[jar_rows, "OD (in)"] = tool_dimension(jar_tool, "od_in", 0.0)
         work.loc[jar_rows, "ID (in)"] = tool_dimension(jar_tool, "id_in", 0.0)
         work.loc[jar_rows, "Type"] = "Jar"
-        work.loc[jar_rows, "Description"] = jar_tool["option_label"]
+        work.loc[jar_rows, "Description"] = "Jar"
 
     if accelerator_tool is not None:
         accelerator_rows = component_values.str.lower() == "accelerator"
@@ -567,7 +840,7 @@ def apply_bha_component_defaults(bha_df, unit, jar_tool, accelerator_tool):
             0.0,
         )
         work.loc[accelerator_rows, "Type"] = "Accelerator"
-        work.loc[accelerator_rows, "Description"] = accelerator_tool["option_label"]
+        work.loc[accelerator_rows, "Description"] = "Accelerator"
 
     return work
 
@@ -585,6 +858,9 @@ def tool_capacity_display(tool):
         "Low test pull (lb)": tool.get("jar_low_test_pull_lbs"),
         "Standard / test pull (lb)": tool.get("jar_standard_pull_test_lbs"),
         "Field max pull (lb)": tool.get("field_max_pull_load_lbs"),
+        "Standard / test push (lb)": tool.get("jar_standard_push_test_lbs"),
+        "Field max push (lb)": tool.get("field_max_push_load_lbs"),
+        "Max lift load (lb)": tool.get("max_lift_load_lbs"),
         "Tensile @ yield (lb)": tool.get("tensile_yield_lbs"),
         "Torque @ yield (ft-lb)": tool.get("torque_yield_ft_lbs"),
     }
@@ -594,7 +870,11 @@ def tool_capacity_display(tool):
         if value is None or (isinstance(value, float) and pd.isna(value)):
             continue
         if isinstance(value, (int, float, np.integer, np.floating)):
-            display[label] = f"{value:,.0f}" if float(value).is_integer() else f"{value:,.2f}"
+            display[label] = (
+                f"{value:,.0f}"
+                if float(value).is_integer()
+                else f"{value:,.3f}".rstrip("0").rstrip(".")
+            )
         else:
             display[label] = str(value)
 
@@ -680,6 +960,12 @@ def pipe_area_in2(od_in, id_in):
     return np.pi / 4.0 * (od_in**2 - id_in**2)
 
 
+def pipe_moment_inertia_in4(od_in, id_in):
+    if od_in is None or id_in is None or od_in <= id_in:
+        return 0.0
+    return np.pi / 64.0 * (od_in**4 - id_in**4)
+
+
 def estimate_survey_efficiency(trajectory_df, friction_coefficient):
     if trajectory_df.empty:
         return 1.0, {}
@@ -704,6 +990,88 @@ def estimate_survey_efficiency(trajectory_df, friction_coefficient):
         "Trajectory efficiency": efficiency,
     }
     return efficiency, details
+
+
+def estimate_ct_setdown_capacity(
+    trajectory_df,
+    hole_id_in,
+    ct_od_in,
+    ct_id_in,
+    ct_weight_lbft,
+    mud_weight_ppg,
+    friction_coefficient,
+    steel_modulus_psi,
+    local_weight_above_jar_lbf=0.0,
+):
+    if (
+        trajectory_df.empty
+        or hole_id_in is None
+        or ct_od_in is None
+        or ct_id_in is None
+        or hole_id_in <= ct_od_in
+        or ct_od_in <= ct_id_in
+    ):
+        return 0.0, {
+            "CT buckling status": "Invalid or incomplete CT / hole geometry",
+        }
+
+    md_range = max(float(trajectory_df["MD"].max() - trajectory_df["MD"].min()), 1.0)
+    tvd_range = max(float(trajectory_df["TVD"].max() - trajectory_df["TVD"].min()), 1.0)
+    avg_sin_inc = float(np.sin(np.radians(trajectory_df["Inclination"])).mean())
+    tortuosity = max(md_range / tvd_range - 1.0, 0.0)
+    radial_clearance_in = max((hole_id_in - ct_od_in) / 2.0, 0.05)
+    clearance_ratio = radial_clearance_in / max(hole_id_in, 0.1)
+
+    inertia_in4 = pipe_moment_inertia_in4(ct_od_in, ct_id_in)
+    steel_density_ppg = 65.5
+    buoyancy_factor = min(max(1.0 - mud_weight_ppg / steel_density_ppg, 0.60), 1.0)
+    effective_weight_lbin = max(ct_weight_lbft * buoyancy_factor / 12.0, 0.001)
+
+    # Approximate constrained helical-buckling onset load for CT in a wellbore.
+    # Larger hole/CT clearance lowers the force that can be transmitted downward.
+    critical_buckling_lbf = 2.0 * np.sqrt(
+        max(steel_modulus_psi * inertia_in4 * effective_weight_lbin / radial_clearance_in, 0.0)
+    )
+
+    contact_index = avg_sin_inc + 0.85 * tortuosity + 2.5 * clearance_ratio
+    transmission_efficiency = float(np.exp(-friction_coefficient * contact_index))
+    transmission_efficiency = min(max(transmission_efficiency, 0.05), 1.0)
+
+    local_weight_efficiency = min(max(1.0 - 1.6 * avg_sin_inc, 0.25), 1.0)
+    usable_local_weight_lbf = max(local_weight_above_jar_lbf, 0.0) * local_weight_efficiency
+    submerged_ct_weight_lbf = ct_weight_lbft * buoyancy_factor * md_range
+    string_weight_transfer_factor = 0.10 * max(1.0 - 1.25 * avg_sin_inc - 0.45 * tortuosity, 0.12)
+    string_weight_transfer_factor *= float(
+        np.exp(-friction_coefficient * (0.70 * avg_sin_inc + 0.35 * tortuosity))
+    )
+    transmitted_ct_weight_lbf = submerged_ct_weight_lbf * string_weight_transfer_factor
+    available_setdown_lbf = (
+        critical_buckling_lbf * transmission_efficiency
+        + transmitted_ct_weight_lbf
+        + usable_local_weight_lbf
+    )
+
+    details = {
+        "Hole ID (in)": hole_id_in,
+        "CT OD (in)": ct_od_in,
+        "CT ID (in)": ct_id_in,
+        "Radial clearance (in)": radial_clearance_in,
+        "Clearance ratio": clearance_ratio,
+        "CT moment of inertia (in^4)": inertia_in4,
+        "Buoyancy factor": buoyancy_factor,
+        "Effective CT weight (lb/ft)": ct_weight_lbft * buoyancy_factor,
+        "Submerged CT weight in hole (lb)": submerged_ct_weight_lbf,
+        "CT string weight transfer factor": string_weight_transfer_factor,
+        "Transferred CT weight before buckling (lb)": transmitted_ct_weight_lbf,
+        "Average sin(inclination)": avg_sin_inc,
+        "MD/TVD tortuosity": tortuosity,
+        "CT buckling contact index": contact_index,
+        "CT setdown transmission efficiency": transmission_efficiency,
+        "CT critical buckling load (lb)": critical_buckling_lbf,
+        "Usable local weight above jar (lb)": usable_local_weight_lbf,
+        "Buckling-limited setdown at jar (lb)": available_setdown_lbf,
+    }
+    return available_setdown_lbf, details
 
 
 def estimate_clearance_efficiency(hole_id_in, work_string_od_in, bha_df):
@@ -748,10 +1116,11 @@ def physical_impact_result(
     fluid_efficiency,
     steel_modulus_psi,
     stopping_distance_in,
+    effective_area_floor_in2=4.0,
+    accelerator_energy_factor=0.5,
 ):
     area_in2 = pipe_area_in2(work_string_od_in, work_string_id_in)
-    min_effective_area_in2 = 4.0
-    effective_area_in2 = max(area_in2, min_effective_area_in2)
+    effective_area_in2 = max(area_in2, effective_area_floor_in2)
     string_stretch_in = 0.0
     string_energy_ftlbf = 0.0
 
@@ -763,7 +1132,9 @@ def physical_impact_result(
 
     accelerator_energy_ftlbf = 0.0
     if accelerator_stroke_in and accelerator_stroke_in > 0:
-        accelerator_energy_ftlbf = 0.5 * pull_load_lbf * accelerator_stroke_in / 12.0
+        accelerator_energy_ftlbf = (
+            accelerator_energy_factor * pull_load_lbf * accelerator_stroke_in / 12.0
+        )
 
     stored_energy_ftlbf = string_energy_ftlbf + accelerator_energy_ftlbf
     delivered_energy_ftlbf = (
@@ -867,7 +1238,10 @@ def calculate_impact_by_pull_load(
 def format_report_number(value, decimals=0):
     if value is None or pd.isna(value):
         return ""
-    return f"{value:,.{decimals}f}"
+    text = f"{value:,.{decimals}f}"
+    if decimals > 0:
+        text = text.rstrip("0").rstrip(".")
+    return text
 
 
 def format_display_dataframe(df, decimal_cols=None):
@@ -878,10 +1252,32 @@ def format_display_dataframe(df, decimal_cols=None):
         if pd.api.types.is_numeric_dtype(display[col]):
             decimals = decimal_cols.get(col, 0)
             display[col] = display[col].apply(
-                lambda x: "" if pd.isna(x) else f"{x:,.{decimals}f}"
+                lambda x: "" if pd.isna(x) else format_report_number(x, decimals)
             )
 
     return display
+
+
+def apply_integer_axis_format(fig):
+    fig.update_xaxes(tickformat=",.0f", separatethousands=True)
+    fig.update_yaxes(tickformat=",.0f", separatethousands=True)
+    fig.update_layout(
+        yaxis=dict(tickformat=",.0f", separatethousands=True),
+        yaxis2=dict(tickformat=",.0f", separatethousands=True),
+    )
+    return fig
+
+
+def set_trace_hovertemplates(fig, x_label, primary_label="Impact", secondary_label="Impulse"):
+    if len(fig.data) > 0:
+        fig.data[0].hovertemplate = (
+            f"{x_label}: %{{x:,.0f}}<br>{primary_label}: %{{y:,.0f}}<extra></extra>"
+        )
+    if len(fig.data) > 1:
+        fig.data[1].hovertemplate = (
+            f"{x_label}: %{{x:,.0f}}<br>{secondary_label}: %{{y:,.0f}}<extra></extra>"
+        )
+    return fig
 
 
 def compact_dataframe(df, height=180, decimal_cols=None, width_ratio=0.62):
@@ -1035,6 +1431,26 @@ unit = st.radio(
     help="Select the unit used for survey MD, fish depth, fish component lengths and BHA component lengths.",
 )
 
+st.markdown("## Jar System")
+jar_system = st.radio(
+    "Select the jar family for this simulation",
+    ["Fishing Jars", "CT Jars"],
+    horizontal=True,
+    help="Fishing Jars uses the fishing jar/energizer catalog. CT Jars uses bidirectional CT jars and CT energizers.",
+)
+catalog_application = "CT" if jar_system == "CT Jars" else "Fishing"
+is_ct_job = jar_system == "CT Jars"
+ct_operation_type = None
+is_ct_milling_operation = False
+if is_ct_job:
+    ct_operation_type = st.radio(
+        "CT BHA Type",
+        ["Fishing", "Milling"],
+        horizontal=True,
+        help="Fishing shows TOF, stuck point and fish components. Milling assumes impact at the mill/bit and skips fish data.",
+    )
+    is_ct_milling_operation = ct_operation_type == "Milling"
+
 st.markdown("## Well Profile")
 well_profile = st.radio(
     "Well Trajectory",
@@ -1079,18 +1495,28 @@ if survey_bottom_input is not None:
     st.caption(f"Detected survey bottom MD: {survey_bottom_input:,.1f} {unit}")
 
 st.markdown("---")
-st.markdown("## Fish Data")
+if is_ct_milling_operation:
+    st.markdown("## Milling BHA Data")
+    st.caption("Se asume como stuck point la profundidad del mill/bit.")
+    fish_depth_label = f"Mill / Top of Fishing MD ({unit})"
+    fish_top_input = st.number_input(
+        fish_depth_label,
+        value=None,
+        min_value=0.0,
+    )
+    stuck_point_input = fish_top_input
+else:
+    st.markdown("## Fish Data")
+    f1, f2 = st.columns(2)
+    fish_depth_label = f"Top of Fish - TOF MD ({unit})"
+    fish_top_input = f1.number_input(fish_depth_label, value=None, min_value=0.0)
+    stuck_point_input = f2.number_input(
+        f"Stuck Point MD ({unit}) - optional",
+        value=None,
+        min_value=0.0,
+    )
 
-f1, f2 = st.columns(2)
-
-fish_top_input = f1.number_input(f"Fish Top MD ({unit})", value=None, min_value=0.0)
-stuck_point_input = f2.number_input(
-    f"Stuck Point MD ({unit}) - optional",
-    value=None,
-    min_value=0.0,
-)
-
-st.caption("Enter fish components from top downward.")
+    st.caption("Enter fish components from top downward.")
 
 default_fish = pd.DataFrame(
     {
@@ -1102,40 +1528,64 @@ default_fish = pd.DataFrame(
     }
 )
 
-fish_df = st.data_editor(
-    default_fish,
-    num_rows="dynamic",
-    use_container_width=True,
-    height=185,
-    key=f"fish_editor_{unit}_blank_v2",
-)
+fish_component_options = [
+    "Fish",
+    "Packer",
+    "WRBP",
+    "Blanking Plug",
+    "Standing Valve",
+    "WL Tool",
+    "SL Tool",
+    "Other",
+]
+
+if is_ct_milling_operation:
+    fish_df = default_fish.copy()
+else:
+    fish_df = st.data_editor(
+        default_fish,
+        num_rows="dynamic",
+        use_container_width=True,
+        height=185,
+        column_config={
+            "Component": st.column_config.SelectboxColumn(
+                "Component",
+                options=fish_component_options,
+            ),
+        },
+        key=f"fish_editor_{unit}_{catalog_application.lower()}_blank_v3",
+    )
 
 fish_length_input = None
 fish_preview_weight_lbf = None
 
 try:
-    fish_preview = fish_df.copy()
-    fish_length_col = f"Length ({unit})"
-    fish_preview[fish_length_col] = pd.to_numeric(
-        fish_preview[fish_length_col], errors="coerce"
-    ).fillna(0.0)
-    fish_preview["OD (in)"] = pd.to_numeric(
-        fish_preview["OD (in)"], errors="coerce"
-    ).fillna(0.0)
-    fish_preview["ID (in)"] = pd.to_numeric(
-        fish_preview["ID (in)"], errors="coerce"
-    ).fillna(0.0)
-    fish_length_input = float(fish_preview[fish_length_col].sum())
-    fish_preview["Length_ft"] = fish_preview[fish_length_col].apply(
-        lambda x: to_ft(x, unit)
-    )
-    fish_preview["Weight_lbft"] = fish_preview.apply(
-        lambda row: steel_weight_lbft(row["OD (in)"], row["ID (in)"]),
-        axis=1,
-    )
-    fish_preview_weight_lbf = float(
-        (fish_preview["Length_ft"] * fish_preview["Weight_lbft"]).sum()
-    )
+    if is_ct_milling_operation:
+        fish_length_input = 0.0
+        fish_preview_weight_lbf = 0.0
+    else:
+        fish_preview = fish_df.copy()
+        fish_length_col = f"Length ({unit})"
+        fish_preview[fish_length_col] = pd.to_numeric(
+            fish_preview[fish_length_col], errors="coerce"
+        ).fillna(0.0)
+        fish_preview["OD (in)"] = pd.to_numeric(
+            fish_preview["OD (in)"], errors="coerce"
+        ).fillna(0.0)
+        fish_preview["ID (in)"] = pd.to_numeric(
+            fish_preview["ID (in)"], errors="coerce"
+        ).fillna(0.0)
+        fish_length_input = float(fish_preview[fish_length_col].sum())
+        fish_preview["Length_ft"] = fish_preview[fish_length_col].apply(
+            lambda x: to_ft(x, unit)
+        )
+        fish_preview["Weight_lbft"] = fish_preview.apply(
+            lambda row: steel_weight_lbft(row["OD (in)"], row["ID (in)"]),
+            axis=1,
+        )
+        fish_preview_weight_lbf = float(
+            (fish_preview["Length_ft"] * fish_preview["Weight_lbft"]).sum()
+        )
 except Exception:
     fish_length_input = None
     fish_preview_weight_lbf = None
@@ -1143,7 +1593,7 @@ except Exception:
 if fish_top_input is not None and survey_bottom_input is not None:
     if fish_top_input > survey_bottom_input:
         st.error(
-            f"Fish Top MD ({fish_top_input:,.1f} {unit}) is deeper than survey bottom "
+            f"{fish_depth_label} ({fish_top_input:,.1f} {unit}) is deeper than survey bottom "
             f"({survey_bottom_input:,.1f} {unit}). Please check the fish depth or survey."
         )
 
@@ -1161,7 +1611,7 @@ if (
             f"Fish Top + Fish Length cannot be greater than the maximum MD in the survey."
         )
 
-if fish_length_input is not None and fish_length_input > 0:
+if not is_ct_milling_operation and fish_length_input is not None and fish_length_input > 0:
     fm1, fm2 = st.columns(2)
     fm1.metric(f"Calculated Fish Length ({unit})", f"{fish_length_input:,.0f}")
 
@@ -1169,8 +1619,14 @@ if fish_length_input is not None and fish_length_input > 0:
         fm2.metric("Estimated Fish Weight", f"{fish_preview_weight_lbf:,.0f} lbf")
 
 st.markdown("---")
-st.markdown("## Fishing BHA From Fish Upward")
-st.caption("Enter the BHA from fish upward. Jar and Accelerator rows use the tools selected above.")
+st.markdown("## BHA / Tool String")
+if is_ct_job:
+    if is_ct_milling_operation:
+        st.caption("Enter the CT milling BHA from the mill/bit upward.")
+    else:
+        st.caption("Enter the CT fishing BHA from the fish upward.")
+else:
+    st.caption("Enter the fishing BHA from fish upward. Jar and Accelerator rows use the tools selected above.")
 
 tool_catalog = load_tool_catalog()
 jar_tool = None
@@ -1183,10 +1639,15 @@ if tool_catalog.empty:
 else:
     c1, c2 = st.columns(2)
 
-    jar_options = ["Manual / Custom"] + tool_options(tool_catalog, "Jar")
+    jar_options = ["Manual / Custom"] + tool_options(
+        tool_catalog,
+        "Jar",
+        catalog_application,
+    )
     accelerator_options = ["Manual / Custom", "Not installed"] + tool_options(
         tool_catalog,
         "Accelerator",
+        catalog_application,
     )
 
     selected_jar_name = c1.selectbox(
@@ -1201,13 +1662,14 @@ else:
     )
 
     if selected_jar_name != "Manual / Custom":
-        jar_tool = selected_tool(tool_catalog, "Jar", selected_jar_name)
+        jar_tool = selected_tool(tool_catalog, "Jar", selected_jar_name, catalog_application)
 
     if selected_accelerator_name not in ["Manual / Custom", "Not installed"]:
         accelerator_tool = selected_tool(
             tool_catalog,
             "Accelerator",
             selected_accelerator_name,
+            catalog_application,
         )
 
     selected_specs = []
@@ -1243,6 +1705,12 @@ default_bha = pd.DataFrame(
     }
 )
 
+default_rows = []
+if is_ct_milling_operation:
+    default_rows.append({"Component": "Mill/Bit"})
+if default_rows:
+    default_bha = pd.DataFrame(default_rows).reindex(columns=default_bha.columns)
+
 if selected_accelerator_name == "Not installed":
     default_bha = default_bha[default_bha["Component"] != "Accelerator"].reset_index(drop=True)
 
@@ -1253,21 +1721,54 @@ default_bha = apply_bha_component_defaults(
     accelerator_tool,
 )
 
-bha_component_options = [
-    "Overshot / Spear",
-    "Safety Joint",
-    "Bumper Sub",
-    "Drill Collar",
-    "HWDP",
-    "Drill Pipe",
-    "Crossover",
-    "Jar",
-    "Accelerator",
-    "Other",
-]
+bha_component_options = (
+    (
+        [
+            "Mill/Bit",
+            "CT Connector",
+            "Hydraulic Disconnect",
+            "Dual Flapper",
+            "Circulation Sub",
+            "Stabilizer",
+            "Weight Bar",
+            "Crossover",
+            "Jar",
+            "Accelerator",
+            "Other",
+        ]
+        if is_ct_milling_operation
+        else [
+            "Overshot / Spear",
+            "CT Connector",
+            "Hydraulic Disconnect",
+            "Dual Flapper",
+            "Circulation Sub",
+            "Stabilizer",
+            "Weight Bar",
+            "Crossover",
+            "Jar",
+            "Accelerator",
+            "Other",
+        ]
+    )
+    if is_ct_job
+    else [
+        "Overshot / Spear",
+        "Safety Joint",
+        "Bumper Sub",
+        "Drill Collar",
+        "HWDP",
+        "Drill Pipe",
+        "Crossover",
+        "Jar",
+        "Accelerator",
+        "Other",
+    ]
+)
 
-bha_state_key = f"bha_data_{unit}_blank_v2"
-bha_version_key = f"bha_editor_version_{unit}_blank_v2"
+bha_mode_key = "milling" if is_ct_milling_operation else "fishing"
+bha_state_key = f"bha_data_{unit}_{catalog_application.lower()}_{bha_mode_key}_blank_v9"
+bha_version_key = f"bha_editor_version_{unit}_{catalog_application.lower()}_{bha_mode_key}_blank_v9"
 
 if bha_state_key not in st.session_state:
     st.session_state[bha_state_key] = default_bha
@@ -1286,11 +1787,66 @@ if not dataframes_match(prepared_bha, st.session_state[bha_state_key]):
     st.session_state[bha_state_key] = prepared_bha
     st.session_state[bha_version_key] += 1
 
+editor_key = (
+    f"bha_editor_{unit}_{catalog_application.lower()}_"
+    f"{bha_mode_key}_{st.session_state[bha_version_key]}"
+)
+
+
+def sync_bha_editor_defaults():
+    editor_state = st.session_state.get(editor_key)
+    if editor_state is None:
+        return
+
+    if isinstance(editor_state, pd.DataFrame):
+        edited_work = editor_state.copy()
+    else:
+        edited_work = st.session_state[bha_state_key].copy()
+        for row_index in editor_state.get("deleted_rows", []):
+            if row_index in edited_work.index:
+                edited_work = edited_work.drop(index=row_index)
+
+        for row_index, changes in editor_state.get("edited_rows", {}).items():
+            row_index = int(row_index)
+            for column, value in changes.items():
+                if column not in edited_work.columns:
+                    edited_work[column] = None
+                edited_work.loc[row_index, column] = value
+
+        added_rows = editor_state.get("added_rows", [])
+        if added_rows:
+            edited_work = pd.concat(
+                [edited_work, pd.DataFrame(added_rows)],
+                ignore_index=True,
+                sort=False,
+            )
+        else:
+            edited_work = edited_work.reset_index(drop=True)
+
+    edited_work = apply_bha_component_defaults(
+        edited_work,
+        unit,
+        jar_tool,
+        accelerator_tool,
+    )
+    st.session_state[bha_state_key] = edited_work
+    st.session_state[bha_version_key] += 1
+
+
 bha_df = st.data_editor(
     st.session_state[bha_state_key],
     num_rows="dynamic",
     use_container_width=True,
     height=280,
+    hide_index=True,
+    column_order=[
+        "Component",
+        "Description",
+        "Joints",
+        f"Length ({unit})",
+        "OD (in)",
+        "ID (in)",
+    ],
     column_config={
         "Component": st.column_config.SelectboxColumn(
             "Component",
@@ -1303,13 +1859,13 @@ bha_df = st.data_editor(
         ),
         "Joints": st.column_config.NumberColumn(
             "Joints",
-            help="Used for Drill Collar and HWDP rows. Length is calculated as joints x 30 ft.",
+            help="Used for Drill Collar, HWDP and Weight Bar rows. Length is calculated as joints x 30 ft.",
             min_value=0,
             step=1,
         ),
     },
-    disabled=["Type"],
-    key=f"bha_editor_{unit}_{st.session_state[bha_version_key]}",
+    key=editor_key,
+    on_change=sync_bha_editor_defaults,
 )
 
 filled_bha_df = apply_bha_component_defaults(
@@ -1319,7 +1875,10 @@ filled_bha_df = apply_bha_component_defaults(
     accelerator_tool,
 )
 
-if not dataframes_match(filled_bha_df, st.session_state[bha_state_key]):
+if (
+    not dataframes_match(filled_bha_df, bha_df)
+    or not dataframes_match(filled_bha_df, st.session_state[bha_state_key])
+):
     st.session_state[bha_state_key] = filled_bha_df
     st.session_state[bha_version_key] += 1
     st.rerun()
@@ -1335,12 +1894,17 @@ if selected_accelerator_name == "Not installed":
 
 st.markdown("---")
 st.markdown("## Work String")
-st.caption("Tubing or drill pipe from the top of the BHA to surface.")
+st.caption("Work string from the top of the BHA to surface.")
 
 ws1, ws2, ws3 = st.columns(3)
+work_string_options = (
+    ["Select...", "Coiled Tubing"]
+    if is_ct_job
+    else ["Select...", "Drill Pipe", "Tubing"]
+)
 work_string_type = ws1.selectbox(
     "Work String Type",
-    ["Select...", "Drill Pipe", "Tubing"],
+    work_string_options,
 )
 
 work_string_od = None
@@ -1357,45 +1921,60 @@ if work_string_type != "Select...":
 
     if work_string_od_label != "Select...":
         available_weights = work_catalog[work_catalog["OD_label"] == work_string_od_label][
-            "WT"
+            "WT_label"
         ].dropna().tolist()
-        work_string_weight_lbft = ws3.selectbox(
-            "Nominal Weight (lb/ft)",
+        selected_work_string_label = ws3.selectbox(
+            "Wall Thickness (in)" if work_string_type == "Coiled Tubing" else "Nominal Weight (lb/ft)",
             ["Select..."] + available_weights,
-            format_func=lambda x: x if isinstance(x, str) else f"{x:g}",
         )
 
-        if work_string_weight_lbft != "Select...":
+        if selected_work_string_label != "Select...":
             selected_work_string = work_catalog[
                 (work_catalog["OD_label"] == work_string_od_label)
-                & (work_catalog["WT"] == work_string_weight_lbft)
+                & (work_catalog["WT_label"] == selected_work_string_label)
             ].iloc[0]
+            selected_work_string_wt = float(selected_work_string["WT"])
             work_string_od = float(selected_work_string["OD_numeric"])
             work_string_id = float(selected_work_string["ID"])
-            work_string_description = (
-                f"{work_string_type} {work_string_od_label} OD, "
-                f"{work_string_weight_lbft:g} lb/ft"
-            )
+            work_string_weight_lbft = float(selected_work_string["Weight_lbft"])
+            if work_string_type == "Coiled Tubing":
+                work_string_description = (
+                    f"{work_string_type} {work_string_od_label} OD x "
+                    f"{selected_work_string_wt:g} in wall"
+                )
+            else:
+                work_string_description = (
+                    f"{work_string_type} {work_string_od_label} OD, "
+                    f"{work_string_weight_lbft:g} lb/ft"
+                )
 
             ws_m1, ws_m2, ws_m3 = st.columns(3)
             ws_m1.metric("Selected Work String", work_string_description)
             ws_m2.metric("Work String ID", f'{work_string_id:g}"')
-            ws_m3.metric("Nominal Weight", f"{work_string_weight_lbft:,.2f} lb/ft")
+            ws_m3.metric(
+                "Nominal Weight",
+                format_report_number(work_string_weight_lbft, 3) + " lb/ft",
+            )
 
 st.markdown("---")
 st.markdown("## Wellbore Data")
 st.caption("Used with the survey to estimate contact/friction energy losses.")
 
 wb1, wb2, wb3 = st.columns(3)
+wellbore_options = (
+    ["Select...", "Casing", "Open Hole", "Drill Pipe", "Tubing"]
+    if is_ct_job
+    else ["Select...", "Cased Hole", "Open Hole"]
+)
 wellbore_type = wb1.selectbox(
     "Hole Type",
-    ["Select...", "Cased Hole", "Open Hole"],
+    wellbore_options,
 )
 
 hole_id_in = None
 wellbore_description = ""
 
-if wellbore_type == "Cased Hole":
+if wellbore_type in ["Cased Hole", "Casing"]:
     casing_data = casing_catalog()
     casing_od_label = wb2.selectbox(
         "Casing OD",
@@ -1428,6 +2007,31 @@ elif wellbore_type == "Open Hole":
         min_value=0.0,
     )
     wellbore_description = "Open Hole"
+elif wellbore_type in ["Drill Pipe", "Tubing"]:
+    tubular_data = work_string_catalog(wellbore_type)
+    tubular_od_label = wb2.selectbox(
+        f"{wellbore_type} OD",
+        ["Select..."] + tubular_data["OD_label"].drop_duplicates().tolist(),
+    )
+    if tubular_od_label != "Select...":
+        tubular_weights = tubular_data[tubular_data["OD_label"] == tubular_od_label][
+            "WT_label"
+        ].dropna().tolist()
+        tubular_weight_label = wb3.selectbox(
+            f"{wellbore_type} Weight (lb/ft)",
+            ["Select..."] + tubular_weights,
+        )
+        if tubular_weight_label != "Select...":
+            selected_tubular = tubular_data[
+                (tubular_data["OD_label"] == tubular_od_label)
+                & (tubular_data["WT_label"] == tubular_weight_label)
+            ].iloc[0]
+            tubular_weight = float(selected_tubular["WT"])
+            hole_id_in = float(selected_tubular["ID"])
+            wellbore_description = (
+                f"{wellbore_type} - {tubular_od_label} {tubular_weight:g} lb/ft"
+            )
+            st.metric(f"Selected {wellbore_type} ID", f'{hole_id_in:.2f}"')
 
 st.markdown("---")
 st.markdown("## Impact Simulation Inputs")
@@ -1440,9 +2044,10 @@ friction_coefficient = None
 if wellbore_type == "Select...":
     is2.info("Select Hole Type to enable friction range.")
 else:
-    friction_min = 0.0 if wellbore_type == "Cased Hole" else 0.25
-    friction_max = 0.25 if wellbore_type == "Cased Hole" else 0.40
-    friction_default = 0.20 if wellbore_type == "Cased Hole" else 0.30
+    is_open_hole = wellbore_type == "Open Hole"
+    friction_min = 0.25 if is_open_hole else 0.0
+    friction_max = 0.40 if is_open_hole else 0.25
+    friction_default = 0.30 if is_open_hole else 0.20
 
     if "friction_coefficient_blank_v1" not in st.session_state:
         st.session_state["friction_coefficient_blank_v1"] = friction_default
@@ -1459,7 +2064,8 @@ else:
         key="friction_coefficient_blank_v1",
     )
 
-jar_pull_limit_lbf = jar_activation_limit_lbf(jar_tool)
+jar_pull_limit_lbf = jar_activation_limit_lbf(jar_tool, "up")
+jar_push_limit_lbf = jar_activation_limit_lbf(jar_tool, "down") if is_ct_job else None
 applied_overpull_default_lbf = None
 if jar_pull_limit_lbf is not None:
     st.caption(
@@ -1484,11 +2090,36 @@ applied_overpull_lbf = st.number_input(
     key="applied_overpull_lbf_blank_v1",
 )
 
+applied_setdown_lbf = None
+if is_ct_job:
+    if jar_push_limit_lbf is not None:
+        st.caption(
+            f"Selected CT jar push limit for down-jarring analysis: {jar_push_limit_lbf:,.0f} lb. "
+            "Applied setdown cannot exceed this value."
+        )
+    if (
+        jar_push_limit_lbf is not None
+        and st.session_state.get("applied_setdown_lbf_blank_v1") is not None
+        and st.session_state["applied_setdown_lbf_blank_v1"] > jar_push_limit_lbf
+    ):
+        st.session_state["applied_setdown_lbf_blank_v1"] = jar_push_limit_lbf
+
+    applied_setdown_lbf = st.number_input(
+        "Applied Setdown / Firing Load Down (lb)",
+        value=None,
+        min_value=0.0,
+        max_value=jar_push_limit_lbf,
+        step=1000.0,
+        key="applied_setdown_lbf_blank_v1",
+    )
+
 if st.button("Generate Well Path and BHA Placement"):
     st.session_state["run_simulation"] = True
 
 if st.session_state.get("run_simulation"):
     try:
+        ct_mill_mode = is_ct_milling_operation
+
         if work_string_od is None or work_string_id is None or work_string_weight_lbft is None:
             st.error("Work String selection is required.")
             st.stop()
@@ -1509,10 +2140,21 @@ if st.session_state.get("run_simulation"):
             st.error("Applied Overpull / Firing Load Up is required.")
             st.stop()
 
+        if is_ct_job and applied_setdown_lbf is None:
+            st.error("Applied Setdown / Firing Load Down is required for CT jar simulations.")
+            st.stop()
+
         if jar_pull_limit_lbf is not None and applied_overpull_lbf > jar_pull_limit_lbf:
             st.error(
                 f"Applied overpull cannot exceed the selected jar limit of "
                 f"{jar_pull_limit_lbf:,.0f} lb."
+            )
+            st.stop()
+
+        if is_ct_job and jar_push_limit_lbf is not None and applied_setdown_lbf > jar_push_limit_lbf:
+            st.error(
+                f"Applied setdown cannot exceed the selected CT jar push limit of "
+                f"{jar_push_limit_lbf:,.0f} lb."
             )
             st.stop()
 
@@ -1544,7 +2186,7 @@ if st.session_state.get("run_simulation"):
         )
 
         if fish_top_ft is None:
-            st.error("Fish Top MD is required.")
+            st.error(f"{fish_depth_label} is required.")
             st.stop()
 
         if fish_top_ft > trajectory["MD"].max():
@@ -1555,27 +2197,41 @@ if st.session_state.get("run_simulation"):
             )
             st.stop()
 
-        fish_work = fish_df.copy()
         length_col = f"Length ({unit})"
+        if ct_mill_mode:
+            fish_work = pd.DataFrame(
+                [
+                    {
+                        "Component": "Mill/Bit impact point",
+                        length_col: 0.0,
+                        "OD (in)": 0.0,
+                        "ID (in)": 0.0,
+                        "Type": "CT Milling",
+                        "Length_ft": 0.0,
+                    }
+                ]
+            )
+            fish_length_ft = 0.0
+        else:
+            fish_work = fish_df.copy()
+            fish_work[length_col] = pd.to_numeric(
+                fish_work[length_col], errors="coerce"
+            ).fillna(0.0)
+            fish_work["OD (in)"] = pd.to_numeric(
+                fish_work["OD (in)"], errors="coerce"
+            ).fillna(0.0)
+            fish_work["ID (in)"] = pd.to_numeric(
+                fish_work["ID (in)"], errors="coerce"
+            ).fillna(0.0)
 
-        fish_work[length_col] = pd.to_numeric(
-            fish_work[length_col], errors="coerce"
-        ).fillna(0.0)
-        fish_work["OD (in)"] = pd.to_numeric(
-            fish_work["OD (in)"], errors="coerce"
-        ).fillna(0.0)
-        fish_work["ID (in)"] = pd.to_numeric(
-            fish_work["ID (in)"], errors="coerce"
-        ).fillna(0.0)
+            fish_work = fish_work[fish_work[length_col] > 0].copy()
 
-        fish_work = fish_work[fish_work[length_col] > 0].copy()
+            if fish_work.empty:
+                st.error("At least one fish component with a positive length is required.")
+                st.stop()
 
-        if fish_work.empty:
-            st.error("At least one fish component with a positive length is required.")
-            st.stop()
-
-        fish_work["Length_ft"] = fish_work[length_col].apply(lambda x: to_ft(x, unit))
-        fish_length_ft = float(fish_work["Length_ft"].sum())
+            fish_work["Length_ft"] = fish_work[length_col].apply(lambda x: to_ft(x, unit))
+            fish_length_ft = float(fish_work["Length_ft"].sum())
 
         fish_bottom_ft = fish_top_ft + fish_length_ft
 
@@ -1699,12 +2355,36 @@ if st.session_state.get("run_simulation"):
         acc_rows = bha_work[
             bha_work["Type"].astype(str).str.lower().str.contains("accelerator")
         ]
+
+        if jar_tool is not None and len(jar_rows) == 0:
+            st.error(
+                "You selected a jar above, but no BHA row has Component = Jar. "
+                "Add a Jar row where you want that tool placed in the BHA."
+            )
+            st.stop()
+
+        if accelerator_tool is not None and len(acc_rows) == 0:
+            st.error(
+                "You selected an accelerator above, but no BHA row has Component = Accelerator. "
+                "Add an Accelerator row where you want that tool placed in the BHA."
+            )
+            st.stop()
+
         dc_rows = bha_work[bha_work["Type"].astype(str).str.lower().eq("dc")]
+        weight_bar_rows = bha_work[
+            bha_work["Type"].astype(str).str.lower().eq("weight bar")
+        ]
         if len(jar_rows) > 0:
             first_jar_index = jar_rows.index[0]
             dc_rows_above_jar = dc_rows[dc_rows.index > first_jar_index]
+            weight_bar_rows_above_jar = weight_bar_rows[
+                weight_bar_rows.index > first_jar_index
+            ]
+            bha_rows_below_jar = bha_work[bha_work.index < first_jar_index]
         else:
             dc_rows_above_jar = dc_rows
+            weight_bar_rows_above_jar = weight_bar_rows
+            bha_rows_below_jar = bha_work.iloc[0:0]
 
         jar_md_ft = float(jar_rows["Center_MD_ft"].iloc[0]) if len(jar_rows) > 0 else None
         acc_md_ft = float(acc_rows["Center_MD_ft"].iloc[0]) if len(acc_rows) > 0 else None
@@ -1721,19 +2401,50 @@ if st.session_state.get("run_simulation"):
         accelerator_weight_lbf = (
             float(acc_rows["Component Weight (lbf)"].sum()) if len(acc_rows) > 0 else 0.0
         )
-        max_joints_above_jar_work = int(
-            max(float(dc_rows_above_jar["Joints"].sum()), 1.0)
-        )
+        if is_ct_job:
+            if len(jar_rows) > 0 and len(acc_rows) > 0:
+                first_acc_index = acc_rows.index[0]
+                lower_index = min(first_jar_index, first_acc_index)
+                upper_index = max(first_jar_index, first_acc_index)
+                sensitivity_rows_above_jar = weight_bar_rows[
+                    (weight_bar_rows.index > lower_index)
+                    & (weight_bar_rows.index < upper_index)
+                ]
+            else:
+                sensitivity_rows_above_jar = weight_bar_rows_above_jar
+            max_joints_above_jar_work = int(
+                max(float(sensitivity_rows_above_jar["Joints"].sum()), 0.0)
+            )
+        else:
+            sensitivity_rows_above_jar = dc_rows_above_jar
+            max_joints_above_jar_work = int(
+                max(float(sensitivity_rows_above_jar["Joints"].sum()), 1.0)
+            )
+        has_joint_sensitivity = max_joints_above_jar_work > 0
         joint_length_ft = 30.0
         joint_weight_lbft = (
-            float(dc_rows_above_jar["Weight_lbft"].replace(0, np.nan).dropna().mean())
-            if len(dc_rows_above_jar) > 0
-            and not dc_rows_above_jar["Weight_lbft"].replace(0, np.nan).dropna().empty
+            float(
+                sensitivity_rows_above_jar["Weight_lbft"]
+                .replace(0, np.nan)
+                .dropna()
+                .mean()
+            )
+            if len(sensitivity_rows_above_jar) > 0
+            and not sensitivity_rows_above_jar["Weight_lbft"]
+            .replace(0, np.nan)
+            .dropna()
+            .empty
             else work_string_weight_lbft
         )
         steel_modulus_psi = 30000000.0
-        stopping_distance_in = max(jar_stroke_in * 0.25, 2.5)
+        stopping_distance_in = max(jar_stroke_in * 0.25, 2.0 if is_ct_job else 2.5)
         applied_firing_load_lbf = applied_overpull_lbf
+
+        if ct_mill_mode:
+            fish_length_ft = float(bha_rows_below_jar["Length_ft"].sum())
+            fish_total_weight_lbf = float(
+                bha_rows_below_jar["Component Weight (lbf)"].sum()
+            )
 
         trajectory_efficiency, trajectory_loss_details = estimate_survey_efficiency(
             trajectory,
@@ -1745,6 +2456,43 @@ if st.session_state.get("run_simulation"):
             bha_work,
         )
         fluid_efficiency = max(0.85, min(1.05, 1.0 - (mud_weight_ppg - 8.4) * 0.01))
+
+        ct_setdown_available_lbf = None
+        ct_buckling_details = {}
+        applied_firing_load_down_lbf = applied_setdown_lbf
+        if is_ct_job:
+            local_weight_above_jar_lbf = float(
+                sensitivity_rows_above_jar["Component Weight (lbf)"].sum()
+            )
+            ct_setdown_available_lbf, ct_buckling_details = estimate_ct_setdown_capacity(
+                trajectory,
+                hole_id_in,
+                work_string_od,
+                work_string_id,
+                work_string_weight_lbft,
+                mud_weight_ppg,
+                friction_coefficient,
+                steel_modulus_psi,
+                local_weight_above_jar_lbf,
+            )
+            setdown_limit_candidates = [
+                value
+                for value in [ct_setdown_available_lbf, jar_push_limit_lbf]
+                if value is not None and not pd.isna(value) and value > 0
+            ]
+            effective_setdown_limit_lbf = (
+                min(setdown_limit_candidates) if setdown_limit_candidates else 0.0
+            )
+            applied_firing_load_down_lbf = min(
+                applied_setdown_lbf,
+                effective_setdown_limit_lbf,
+            )
+            if applied_setdown_lbf > applied_firing_load_down_lbf:
+                st.warning(
+                    f"Requested down firing load was {applied_setdown_lbf:,.0f} lb, "
+                    f"but CT buckling / jar limits reduce the available setdown at the jar "
+                    f"to {applied_firing_load_down_lbf:,.0f} lb."
+                )
 
         if clearance_details.get("Minimum radial clearance (in)") is not None:
             if clearance_details["Minimum radial clearance (in)"] <= 0:
@@ -1769,6 +2517,8 @@ if st.session_state.get("run_simulation"):
             "fluid_efficiency": fluid_efficiency,
             "steel_modulus_psi": steel_modulus_psi,
             "stopping_distance_in": stopping_distance_in,
+            "effective_area_floor_in2": 2.0 if is_ct_job else 4.0,
+            "accelerator_energy_factor": 0.75 if is_ct_job else 0.5,
         }
 
         impact_by_joints = calculate_impact_by_joints(
@@ -1776,6 +2526,19 @@ if st.session_state.get("run_simulation"):
             max_joints_above_jar_work,
             physics_inputs,
         )
+        impact_by_joints_down = None
+        if is_ct_job:
+            impact_by_joints_down = calculate_impact_by_joints(
+                applied_firing_load_down_lbf,
+                max_joints_above_jar_work,
+                physics_inputs,
+            ).rename(
+                columns={
+                    "Impact (lb)": "Down Impact (lb)",
+                    "Impulse (lb-sec)": "Down Impulse (lb-sec)",
+                    "Up Impact Ratio": "Down Impact Ratio",
+                }
+            )
 
         fish_top_point = interpolate_at_md(trajectory, fish_top_ft)
 
@@ -1809,9 +2572,9 @@ if st.session_state.get("run_simulation"):
             format_display_dataframe(
                 fish_work[fish_display_cols],
                 {
-                    "OD (in)": 2,
-                    "ID (in)": 2,
-                    "Weight_lbft": 2,
+                    "OD (in)": 3,
+                    "ID (in)": 3,
+                    "Weight_lbft": 3,
                 },
             ),
             use_container_width=True,
@@ -1823,7 +2586,6 @@ if st.session_state.get("run_simulation"):
         display_cols = [
             "Component",
             "Description",
-            "Type",
             "Joints",
             bha_length_col,
             "OD (in)",
@@ -1841,9 +2603,9 @@ if st.session_state.get("run_simulation"):
             format_display_dataframe(
                 bha_work[display_cols],
                 {
-                    "OD (in)": 2,
-                    "ID (in)": 2,
-                    "Weight_lbft": 2,
+                    "OD (in)": 3,
+                    "ID (in)": 3,
+                    "Weight_lbft": 3,
                 },
             ),
             use_container_width=True,
@@ -1857,7 +2619,7 @@ if st.session_state.get("run_simulation"):
             f"Work String Length ({unit})",
             f"{from_ft(work_string_length_ft, unit):,.0f}",
         )
-        ws_summary_2.metric("Nominal Weight", f"{work_string_weight_lbft:,.2f} lb/ft")
+        ws_summary_2.metric("Nominal Weight", format_report_number(work_string_weight_lbft, 3) + " lb/ft")
         ws_summary_3.metric(
             "Work String Weight",
             f"{work_string_total_weight_lbf:,.0f} lbf",
@@ -1885,9 +2647,9 @@ if st.session_state.get("run_simulation"):
             work_string_display,
             height=100,
             decimal_cols={
-                "OD (in)": 2,
-                "ID (in)": 2,
-                "Weight_lbft": 2,
+                "OD (in)": 3,
+                "ID (in)": 3,
+                "Weight_lbft": 3,
             },
             width_ratio=0.70,
         )
@@ -1920,9 +2682,9 @@ if st.session_state.get("run_simulation"):
             format_display_dataframe(
                 trajectory_display,
                 {
-                    "Inclination": 2,
-                    "Azimuth": 2,
-                    "DLS": 2,
+                    "Inclination": 3,
+                    "Azimuth": 3,
+                    "DLS": 3,
                 },
             ),
             use_container_width=True,
@@ -2105,6 +2867,20 @@ if st.session_state.get("run_simulation"):
         if unit == "m":
             horizontal_departure = horizontal_departure * FT_TO_M
 
+        tvd_max_plot = float(np.nanmax(z_tvd)) if len(z_tvd) else 0.0
+        departure_min_plot = float(np.nanmin(horizontal_departure)) if len(horizontal_departure) else 0.0
+        departure_max_plot = float(np.nanmax(horizontal_departure)) if len(horizontal_departure) else 0.0
+        departure_span_plot = max(departure_max_plot - departure_min_plot, 0.0)
+        horizontal_padding = max(
+            tvd_max_plot * 0.08,
+            departure_span_plot * 0.15,
+            100.0 if unit == "ft" else 30.0,
+        )
+        departure_x_range = [
+            min(0.0, departure_min_plot) - horizontal_padding,
+            max(departure_max_plot, horizontal_padding) + horizontal_padding,
+        ]
+
         fig_departure_tvd = go.Figure()
 
         fig_departure_tvd.add_trace(
@@ -2127,11 +2903,19 @@ if st.session_state.get("run_simulation"):
 
         fig_departure_tvd.update_layout(
             title="Vertical Section - Horizontal Departure vs TVD",
-            xaxis_title=f"Horizontal Departure ({unit})",
-            yaxis_title=f"TVD ({unit})",
+            xaxis=dict(
+                title=f"Horizontal Departure ({unit})",
+                range=departure_x_range,
+                tickformat=",.0f",
+                separatethousands=True,
+            ),
+            yaxis=dict(
+                title=f"TVD ({unit})",
+                tickformat=",.0f",
+                separatethousands=True,
+            ),
             height=430,
             margin=dict(l=10, r=10, b=32, t=42),
-            yaxis=dict(scaleanchor="x", scaleratio=1),
         )
 
         st.plotly_chart(fig_departure_tvd, use_container_width=True)
@@ -2143,27 +2927,62 @@ if st.session_state.get("run_simulation"):
 
         report_inputs = pd.DataFrame(
             [
-                {"Input": "Mud Weight", "Value": f"{mud_weight_ppg:,.2f} lb/gal"},
+                {"Input": "Mud Weight", "Value": f"{format_report_number(mud_weight_ppg, 3)} lb/gal"},
                 {
                     "Input": "Friction Coefficient",
-                    "Value": f"{friction_coefficient:,.2f}",
+                    "Value": format_report_number(friction_coefficient, 3),
                 },
                 {
                     "Input": "Well Profile",
                     "Value": well_profile,
                 },
+                *(
+                    [
+                        {
+                            "Input": "CT BHA Type",
+                            "Value": ct_operation_type,
+                        }
+                    ]
+                    if is_ct_job
+                    else []
+                ),
                 {
                     "Input": "Hole / Casing ID",
                     "Value": f"{hole_id_in:g} in ({wellbore_description})",
                 },
                 {
                     "Input": "Work String",
-                    "Value": f"{work_string_description}, OD {work_string_od:g} in, {work_string_weight_lbft:,.1f} lb/ft",
+                    "Value": (
+                        f"{work_string_description}, OD {format_report_number(work_string_od, 3)} in, "
+                        f"{format_report_number(work_string_weight_lbft, 3)} lb/ft"
+                    ),
                 },
                 {
                     "Input": "Applied Firing Load Up",
                     "Value": f"{applied_firing_load_lbf:,.0f} lb",
                 },
+                *(
+                    [
+                        {
+                            "Input": "Requested Down Firing Load",
+                            "Value": f"{applied_setdown_lbf:,.0f} lb",
+                        },
+                        {
+                            "Input": "CT Jar Push Limit",
+                            "Value": (
+                                f"{jar_push_limit_lbf:,.0f} lb"
+                                if jar_push_limit_lbf is not None
+                                else "Manual / not available"
+                            ),
+                        },
+                        {
+                            "Input": "Available Setdown at Jar",
+                            "Value": f"{ct_setdown_available_lbf:,.0f} lb",
+                        },
+                    ]
+                    if is_ct_job
+                    else []
+                ),
                 {
                     "Input": "Selected Jar Pull Limit",
                     "Value": (
@@ -2173,7 +2992,7 @@ if st.session_state.get("run_simulation"):
                     ),
                 },
                 {
-                    "Input": "Max DC Joints above Jar",
+                    "Input": "Weight Bar Joints in Current BHA" if is_ct_job else "Max DC Joints above Jar",
                     "Value": f"{max_joints_above_jar_work}",
                 },
             ]
@@ -2194,200 +3013,424 @@ if st.session_state.get("run_simulation"):
 
         compact_dataframe(report_inputs, height=210, width_ratio=0.58)
 
+        ct_buckling_display = None
+        if is_ct_job:
+            ct_buckling_display = pd.DataFrame(
+                [
+                    {"Parameter": key, "Value": value}
+                    for key, value in ct_buckling_details.items()
+                ]
+            )
+            st.markdown("### CT Buckling / Setdown Limit")
+            compact_dataframe(
+                ct_buckling_display,
+                height=260,
+                decimal_cols={"Value": 3},
+                width_ratio=0.58,
+            )
+
         impact_display_cols = [
             "Number of Joints above Jar",
             "Impact (lb)",
             "Impulse (lb-sec)",
             "Up Impact Ratio",
         ]
-        impact_display = impact_by_joints[impact_display_cols].copy()
+        if is_ct_job:
+            impact_display = impact_by_joints[
+                impact_by_joints["Number of Joints above Jar"] == max_joints_above_jar_work
+            ][impact_display_cols].copy()
+        else:
+            impact_display = impact_by_joints[impact_display_cols].copy()
+        if is_ct_job and impact_by_joints_down is not None:
+            down_cols = [
+                "Number of Joints above Jar",
+                "Down Impact (lb)",
+                "Down Impulse (lb-sec)",
+                "Down Impact Ratio",
+            ]
+            impact_display = impact_display.merge(
+                impact_by_joints_down[down_cols],
+                on="Number of Joints above Jar",
+                how="left",
+            )
         impact_display["Impact (lb)"] = impact_display["Impact (lb)"].round(0)
         impact_display["Impulse (lb-sec)"] = impact_display["Impulse (lb-sec)"].round(0)
         impact_display["Up Impact Ratio"] = impact_display["Up Impact Ratio"].round(2)
+        if is_ct_job:
+            impact_display["Down Impact (lb)"] = impact_display["Down Impact (lb)"].round(0)
+            impact_display["Down Impulse (lb-sec)"] = impact_display[
+                "Down Impulse (lb-sec)"
+            ].round(0)
+            impact_display["Down Impact Ratio"] = impact_display[
+                "Down Impact Ratio"
+            ].round(2)
+            impact_display = impact_display.rename(
+                columns={"Number of Joints above Jar": "Weight Bar Joints in Current BHA"}
+            )
 
-        st.markdown("### Up Calculation Results")
+        st.markdown("### Calculation Results")
+        ratio_decimals = {"Up Impact Ratio": 2}
+        if is_ct_job:
+            ratio_decimals["Down Impact Ratio"] = 2
         st.dataframe(
-            format_display_dataframe(impact_display, {"Up Impact Ratio": 2}),
+            format_display_dataframe(impact_display, ratio_decimals),
             use_container_width=True,
             height=330,
         )
 
-        fig_impact_joints = go.Figure()
-        fig_impact_joints.add_trace(
-            go.Scatter(
-                x=impact_by_joints["Number of Joints above Jar"],
-                y=impact_by_joints["Impact (lb)"],
-                mode="lines+markers",
-                name="Impact",
-                line=dict(color=TASMAN_BLUE, width=3),
+        fig_impact_joints = None
+        fig_down_joints = None
+        show_joint_sensitivity_chart = not is_ct_job
+        if show_joint_sensitivity_chart:
+            fig_impact_joints = go.Figure()
+            fig_impact_joints.add_trace(
+                go.Scatter(
+                    x=impact_by_joints["Number of Joints above Jar"],
+                    y=impact_by_joints["Impact (lb)"],
+                    mode="lines+markers",
+                    name="Up Impact",
+                    line=dict(color=TASMAN_BLUE, width=3),
+                )
             )
-        )
-        fig_impact_joints.add_trace(
-            go.Scatter(
-                x=impact_by_joints["Number of Joints above Jar"],
-                y=impact_by_joints["Impulse (lb-sec)"],
-                mode="lines+markers",
-                name="Impulse",
-                line=dict(color=TASMAN_ORANGE, width=3),
-                yaxis="y2",
+            fig_impact_joints.add_trace(
+                go.Scatter(
+                    x=impact_by_joints["Number of Joints above Jar"],
+                    y=impact_by_joints["Impulse (lb-sec)"],
+                    mode="lines+markers",
+                    name="Up Impulse",
+                    line=dict(color=TASMAN_ORANGE, width=3),
+                    yaxis="y2",
+                )
             )
-        )
-        fig_impact_joints.update_layout(
-            title="Impact and Impulse by Joints above Jar",
-            xaxis_title="Number of Joints above Jar",
-            yaxis_title="Impact (lb)",
-            yaxis2=dict(
-                title="Impulse (lb-sec)",
-                overlaying="y",
-                side="right",
-            ),
-            height=360,
-            margin=dict(l=10, r=10, b=32, t=42),
-            legend=dict(orientation="h", y=1.12),
-        )
+            fig_impact_joints.update_layout(
+                title="Up Jarring - Impact and Impulse by Joints above Jar",
+                yaxis=dict(
+                    title="Impact (lb)",
+                    tickformat=",.0f",
+                    separatethousands=True,
+                ),
+                yaxis2=dict(
+                    title="Impulse (lb-sec)",
+                    overlaying="y",
+                    side="right",
+                    tickformat=",.0f",
+                    separatethousands=True,
+                ),
+                xaxis=dict(
+                    title="Number of Joints above Jar",
+                    tickformat=",.0f",
+                    separatethousands=True,
+                    dtick=1,
+                ),
+                height=360,
+                margin=dict(l=10, r=10, b=32, t=42),
+                legend=dict(orientation="h", y=1.12),
+            )
+            set_trace_hovertemplates(fig_impact_joints, "Joints")
+            st.plotly_chart(fig_impact_joints, use_container_width=True)
 
-        st.plotly_chart(fig_impact_joints, use_container_width=True)
+        if show_joint_sensitivity_chart and is_ct_job and impact_by_joints_down is not None:
+            fig_down_joints = go.Figure()
+            fig_down_joints.add_trace(
+                go.Scatter(
+                    x=impact_by_joints_down["Number of Joints above Jar"],
+                    y=impact_by_joints_down["Down Impact (lb)"],
+                    mode="lines+markers",
+                    name="Down Impact",
+                    line=dict(color=TASMAN_BLUE, width=3),
+                )
+            )
+            fig_down_joints.add_trace(
+                go.Scatter(
+                    x=impact_by_joints_down["Number of Joints above Jar"],
+                    y=impact_by_joints_down["Down Impulse (lb-sec)"],
+                    mode="lines+markers",
+                    name="Down Impulse",
+                    line=dict(color=TASMAN_ORANGE, width=3),
+                    yaxis="y2",
+                )
+            )
+            fig_down_joints.update_layout(
+                title="Down Jarring - Impact and Impulse by Joints above Jar",
+                yaxis=dict(
+                    title="Impact (lb)",
+                    tickformat=",.0f",
+                    separatethousands=True,
+                ),
+                yaxis2=dict(
+                    title="Impulse (lb-sec)",
+                    overlaying="y",
+                    side="right",
+                    tickformat=",.0f",
+                    separatethousands=True,
+                ),
+                xaxis=dict(
+                    title="Number of Joints above Jar",
+                    tickformat=",.0f",
+                    separatethousands=True,
+                    dtick=1,
+                ),
+                height=360,
+                margin=dict(l=10, r=10, b=32, t=42),
+                legend=dict(orientation="h", y=1.12),
+            )
+            set_trace_hovertemplates(fig_down_joints, "Joints", "Down Impact", "Down Impulse")
+            st.plotly_chart(fig_down_joints, use_container_width=True)
 
-        st.markdown("### Specialized Overpull Sweep")
-        st.caption(
-            "Select a DC count from the general result, then sweep the applied overpull for that configuration."
-        )
+        st.markdown("### Applied Load Sweep")
+        if is_ct_job:
+            st.caption(
+                "Up-jarring sweep for the BHA as entered. To evaluate a different weight bar configuration, update the BHA and run again."
+            )
+        else:
+            st.caption(
+                "Select a joint count from the general result, then sweep the applied load for that configuration."
+            )
 
-        sweep_1, sweep_2, sweep_3, sweep_4 = st.columns(4)
-        sweep_joint_count = sweep_1.selectbox(
-            "DC Joints above Jar",
-            list(range(0, max_joints_above_jar_work + 1)),
-            index=min(3, max_joints_above_jar_work),
+        sweep_cols = st.columns(4)
+        sweep_1 = sweep_cols[0]
+        sweep_2 = sweep_cols[1]
+        sweep_3 = sweep_cols[2]
+        sweep_4 = sweep_cols[3]
+        sweep_limit_lbf = jar_pull_limit_lbf or applied_firing_load_lbf
+        sweep_reference_load_lbf = applied_firing_load_lbf
+        if is_ct_job:
+            sweep_joint_count = max_joints_above_jar_work
+            sweep_1.metric("Weight Bar Joints", f"{sweep_joint_count}")
+        else:
+            sweep_joint_count = sweep_1.selectbox(
+                "DC Joints above Jar",
+                list(range(0, max_joints_above_jar_work + 1)),
+                index=min(3, max_joints_above_jar_work),
+            )
+        sweep_config_label = (
+            "Current BHA" if is_ct_job else f"{sweep_joint_count} DC Joints"
         )
-        for sweep_key in ["sweep_start_lbf", "sweep_end_lbf"]:
+        sweep_start_key = f"sweep_start_lbf_{catalog_application.lower()}_v2"
+        sweep_end_key = f"sweep_end_lbf_{catalog_application.lower()}_v2"
+        sweep_step_key = f"sweep_step_lbf_{catalog_application.lower()}_v2"
+        for sweep_key in [sweep_start_key, sweep_end_key]:
             if (
-                jar_pull_limit_lbf is not None
+                sweep_limit_lbf is not None
                 and sweep_key in st.session_state
-                and st.session_state[sweep_key] > jar_pull_limit_lbf
+                and st.session_state[sweep_key] > sweep_limit_lbf
             ):
-                st.session_state[sweep_key] = jar_pull_limit_lbf
+                st.session_state[sweep_key] = sweep_limit_lbf
+        if is_ct_job:
+            default_sweep_start_lbf = 5000.0 if float(sweep_limit_lbf or 0.0) >= 5000.0 else 0.0
+            default_sweep_step_lbf = 1000.0
+        else:
+            default_sweep_start_lbf = min(20000.0, float(sweep_limit_lbf or 0.0))
+            default_sweep_step_lbf = 10000.0
         sweep_start_lbf = sweep_2.number_input(
-            "Overpull Start (lb)",
-            value=20000.0,
+            "Load Start (lb)",
+            value=default_sweep_start_lbf,
             min_value=0.0,
-            max_value=jar_pull_limit_lbf,
-            step=5000.0,
-            key="sweep_start_lbf",
+            max_value=sweep_limit_lbf,
+            step=default_sweep_step_lbf,
+            key=sweep_start_key,
         )
-        sweep_end_default = min(applied_firing_load_lbf, jar_pull_limit_lbf or applied_firing_load_lbf)
+        sweep_end_default = (
+            float(sweep_limit_lbf or sweep_reference_load_lbf)
+            if is_ct_job
+            else min(
+                sweep_reference_load_lbf,
+                sweep_limit_lbf or sweep_reference_load_lbf,
+            )
+        )
         sweep_end_lbf = sweep_3.number_input(
-            "Overpull End (lb)",
+            "Load End (lb)",
             value=float(sweep_end_default),
             min_value=0.0,
-            max_value=jar_pull_limit_lbf,
-            step=5000.0,
-            key="sweep_end_lbf",
+            max_value=sweep_limit_lbf,
+            step=default_sweep_step_lbf,
+            key=sweep_end_key,
         )
         sweep_step_lbf = sweep_4.number_input(
-            "Overpull Step (lb)",
-            value=10000.0,
+            "Load Step (lb)",
+            value=default_sweep_step_lbf,
             min_value=1.0,
             step=1000.0,
-            key="sweep_step_lbf",
+            key=sweep_step_key,
         )
 
-        impact_by_pull = calculate_impact_by_pull_load(
-            sweep_start_lbf,
-            sweep_end_lbf,
-            sweep_step_lbf,
-            int(sweep_joint_count),
-            physics_inputs,
-        )
+        def build_load_sweep(load_start, load_end, ratio_col, direction_label):
+            sweep_df = calculate_impact_by_pull_load(
+                load_start,
+                load_end,
+                sweep_step_lbf,
+                int(sweep_joint_count),
+                physics_inputs,
+            )
+            display_df = sweep_df[
+                ["Pull Load (lb)", "Impact (lb)", "Impulse (lb-sec)", "Up Impact Ratio"]
+            ].copy()
+            if direction_label == "Down":
+                display_df = display_df.rename(
+                    columns={
+                        "Pull Load (lb)": "Setdown Load (lb)",
+                        "Impact (lb)": "Down Impact (lb)",
+                        "Impulse (lb-sec)": "Down Impulse (lb-sec)",
+                        "Up Impact Ratio": ratio_col,
+                    }
+                )
+                impact_col = "Down Impact (lb)"
+                impulse_col = "Down Impulse (lb-sec)"
+                x_col = "Setdown Load (lb)"
+            else:
+                display_df = display_df.rename(
+                    columns={"Up Impact Ratio": ratio_col}
+                )
+                impact_col = "Impact (lb)"
+                impulse_col = "Impulse (lb-sec)"
+                x_col = "Pull Load (lb)"
 
-        pull_display_cols = [
-            "Pull Load (lb)",
-            "Impact (lb)",
-            "Impulse (lb-sec)",
+            display_df[impact_col] = display_df[impact_col].round(0)
+            display_df[impulse_col] = display_df[impulse_col].round(0)
+            display_df[ratio_col] = display_df[ratio_col].round(2)
+
+            fig = go.Figure()
+            fig.add_trace(
+                go.Scatter(
+                    x=display_df[x_col],
+                    y=display_df[impact_col],
+                    mode="lines+markers",
+                    name=f"{direction_label} Impact",
+                    line=dict(color=TASMAN_BLUE, width=3),
+                )
+            )
+            fig.add_trace(
+                go.Scatter(
+                    x=display_df[x_col],
+                    y=display_df[impulse_col],
+                    mode="lines+markers",
+                    name=f"{direction_label} Impulse",
+                    line=dict(color=TASMAN_ORANGE, width=3),
+                    yaxis="y2",
+                )
+            )
+            fig.update_layout(
+                title=None,
+                xaxis=dict(
+                    title="Applied Load (lb)",
+                    tickformat=",.0f",
+                    separatethousands=True,
+                ),
+                yaxis=dict(
+                    title="Impact (lb)",
+                    tickformat=",.0f",
+                    separatethousands=True,
+                ),
+                yaxis2=dict(
+                    title="Impulse (lb-sec)",
+                    overlaying="y",
+                    side="right",
+                    tickformat=",.0f",
+                    separatethousands=True,
+                ),
+                height=360,
+                margin=dict(l=10, r=10, b=32, t=20),
+                legend=dict(orientation="h", y=1.08),
+            )
+            set_trace_hovertemplates(fig, "Applied Load", f"{direction_label} Impact", f"{direction_label} Impulse")
+            return display_df, fig
+
+        pull_report_items = []
+
+        up_sweep_end_lbf = min(sweep_end_lbf, jar_pull_limit_lbf or sweep_end_lbf)
+        up_sweep_start_lbf = min(sweep_start_lbf, up_sweep_end_lbf)
+        pull_display, fig_pull = build_load_sweep(
+            up_sweep_start_lbf,
+            up_sweep_end_lbf,
             "Up Impact Ratio",
-        ]
-        pull_display = impact_by_pull[pull_display_cols].copy()
-        pull_display["Impact (lb)"] = pull_display["Impact (lb)"].round(0)
-        pull_display["Impulse (lb-sec)"] = pull_display["Impulse (lb-sec)"].round(0)
-        pull_display["Up Impact Ratio"] = pull_display["Up Impact Ratio"].round(2)
-
+            "Up",
+        )
+        st.markdown("#### Up Jarring Sweep")
         st.dataframe(
             format_display_dataframe(pull_display, {"Up Impact Ratio": 2}),
             use_container_width=True,
             height=260,
         )
-
-        fig_pull = go.Figure()
-        fig_pull.add_trace(
-            go.Scatter(
-                x=impact_by_pull["Pull Load (lb)"],
-                y=impact_by_pull["Impact (lb)"],
-                mode="lines+markers",
-                name="Impact",
-                line=dict(color=TASMAN_BLUE, width=3),
-            )
-        )
-        fig_pull.add_trace(
-            go.Scatter(
-                x=impact_by_pull["Pull Load (lb)"],
-                y=impact_by_pull["Impulse (lb-sec)"],
-                mode="lines+markers",
-                name="Impulse",
-                line=dict(color=TASMAN_ORANGE, width=3),
-                yaxis="y2",
-            )
-        )
-        fig_pull.update_layout(
-            title=f"Impact and Impulse by Overpull - {sweep_joint_count} DC Joints",
-            xaxis_title="Applied Overpull (lb)",
-            yaxis_title="Impact (lb)",
-            yaxis2=dict(
-                title="Impulse (lb-sec)",
-                overlaying="y",
-                side="right",
-            ),
-            height=360,
-            margin=dict(l=10, r=10, b=32, t=42),
-            legend=dict(orientation="h", y=1.12),
-        )
-
         st.plotly_chart(fig_pull, use_container_width=True)
+        pull_report_items.append(("Up Jarring Applied Load Sweep", pull_display, fig_pull))
 
         report_body = ""
         report_body += dataframe_to_report_html(client_info, "Customer / Simulation Header")
         report_body += dataframe_to_report_html(report_inputs, "Input Summary")
         report_body += dataframe_to_report_html(
             fish_work[fish_display_cols],
-            "Fish Configuration",
-            {"Weight_lbft": 2, "Component Weight (lbf)": 0},
+            "CT Milling Impact Point" if ct_mill_mode else "Fish Configuration",
+            {
+                "OD (in)": 3,
+                "ID (in)": 3,
+                "Weight_lbft": 3,
+                "Component Weight (lbf)": 0,
+            },
         )
         report_body += dataframe_to_report_html(
             bha_work[display_cols],
             "BHA / Tool String Configuration",
-            {"Weight_lbft": 2, "Component Weight (lbf)": 0},
+            {
+                "OD (in)": 3,
+                "ID (in)": 3,
+                "Weight_lbft": 3,
+                "Component Weight (lbf)": 0,
+            },
         )
         report_body += dataframe_to_report_html(
             work_string_display,
-            "Drill Pipe above BHA / Tool String",
-            {"Weight_lbft": 2, "Total Weight (lbf)": 0},
+            "Work String above BHA / Tool String",
+            {
+                "OD (in)": 3,
+                "ID (in)": 3,
+                "Weight_lbft": 3,
+                "Total Weight (lbf)": 0,
+            },
         )
         report_body += dataframe_to_report_html(
             impact_display,
-            "Up Calculation Results",
-            {"Impact (lb)": 0, "Impulse (lb-sec)": 0, "Up Impact Ratio": 2},
-        )
-        report_body += dataframe_to_report_html(
-            pull_display,
-            f"Specialized Overpull Sweep - {sweep_joint_count} DC Joints",
-            {"Impact (lb)": 0, "Impulse (lb-sec)": 0, "Up Impact Ratio": 2},
-        )
-        report_body += plotly_report_html(
-            fig_impact_joints,
-            "Impact and Impulse by Joints above Jar",
+            "Calculation Results",
+            {
+                "Impact (lb)": 0,
+                "Impulse (lb-sec)": 0,
+                "Up Impact Ratio": 2,
+                "Down Impact (lb)": 0,
+                "Down Impulse (lb-sec)": 0,
+                "Down Impact Ratio": 2,
+            },
         )
         report_body += plotly_report_html(
-            fig_pull,
-            f"Impact and Impulse by Overpull - {sweep_joint_count} DC Joints",
+            fig_departure_tvd,
+            "Well Trajectory - True Vertical Section",
         )
+        for sweep_title, sweep_display, _ in pull_report_items:
+            report_body += dataframe_to_report_html(
+                sweep_display,
+                f"{sweep_title} - {sweep_config_label}",
+                {
+                    "Impact (lb)": 0,
+                    "Impulse (lb-sec)": 0,
+                    "Up Impact Ratio": 2,
+                    "Down Impact (lb)": 0,
+                    "Down Impulse (lb-sec)": 0,
+                    "Down Impact Ratio": 2,
+                },
+            )
+        if fig_impact_joints is not None:
+            report_body += plotly_report_html(
+                fig_impact_joints,
+                "Up Jarring - Impact and Impulse by Joints above Jar",
+            )
+        if fig_down_joints is not None:
+            report_body += plotly_report_html(
+                fig_down_joints,
+                "Down Jarring - Impact and Impulse by Joints above Jar",
+            )
+        for sweep_title, _, sweep_fig in pull_report_items:
+            report_body += plotly_report_html(
+                sweep_fig,
+                f"{sweep_title} - {sweep_config_label}",
+            )
 
         report_html = build_impact_report_html(
             {
